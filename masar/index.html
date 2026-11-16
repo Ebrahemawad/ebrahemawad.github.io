@@ -795,7 +795,7 @@ function CompanyReports({ companies, shipments, events, payments=[], day, setDay
     const finalized = rows.filter(e => ['delivered', 'partial', 'returned_visit'].includes(e.status)), due = finalized.reduce((t, e) => t + companyDue({ ...e.shipment, status: e.status }), 0);
     const paid = payments.filter(p=>p.type==='company'&&Number(p.party_id)===id&&businessDate(p.created)<=day).reduce((n,p)=>n+Number(p.amount||0),0);
     const remaining = due - paid;
-    const historicalLimit = day!==businessDate(new Date()) && rows.some(e=>['delivered','partial','returned_visit'].includes(e.status) && e.shipment.delivered && businessDate(e.shipment.delivered)>day);
+    const historicalLimit = day!==businessDate(new Date()) && finalized.length>0;
     const save = () => {
         const wb = XLSX.utils.book_new();
         const intro = [{ 'اسم الشركة': name, 'الحالة حتى تاريخ': day, 'التوقيت': 'القاهرة', 'تنبيه تدقيق تاريخي': historicalLimit?'القيم المالية القديمة قد لا تعكس التصحيحات اللاحقة لأن قيمة التحصيل تاريخيًا لم تكن محفوظة في كل حدث':'', 'ملاحظات': 'صف واحد لكل شحنة. قيمة الشركة قبل خصم أي تسويات مدفوعة؛ محسوبة للحالات المقفولة فقط. تحصيل رفض الزيارة هو التوصيل فقط، والاستلام الجزئي بالمبلغ المسجل. بعض الحالات القديمة غير متاحة تاريخيًا. المبالغ بالجنيه.' }];
