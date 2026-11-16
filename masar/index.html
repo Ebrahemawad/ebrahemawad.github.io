@@ -1,227 +1,1079 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8"><meta name="referrer" content="strict-origin-when-cross-origin"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>مَسار | إدارة شركة الشحن</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<style>
-:root{--bg:#f3f5fa;--card:#fff;--ink:#19243c;--mut:#69758e;--navy:#122447;--accent:#2869df;--soft:#eaf1ff;--line:#e3e7f0;--danger:#cb3d51;--success:#119870}
-*{box-sizing:border-box}body{margin:0;font-family:Cairo,Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:13px}button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:var(--accent)}
-.login{min-height:100vh;display:grid;place-items:center;background:radial-gradient(ellipse at 20% 15%,#27559b,#101f3c 62%);padding:20px}
-.login-card{max-width:420px;width:100%;background:#fff;padding:34px;border-radius:23px;box-shadow:0 26px 80px #030d2677}.mark{display:inline-grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#dce8ff;color:#1c59c2;font-weight:800;font-size:22px}
-.login h1{margin:14px 0 3px;font-size:30px}.mut{color:var(--mut)}.login p{margin:0 0 20px}
-input,select,textarea{width:100%;border:1px solid #d7deec;background:white;padding:10px 12px;border-radius:9px;color:var(--ink);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #2b70e11a}label{display:block;font-weight:700;font-size:12px;margin-bottom:5px}
-.form-row{margin-bottom:13px}.hint{font-size:11px;color:var(--mut)}.btn{padding:9px 15px;border:1px solid #d6dfee;border-radius:9px;background:white;color:#273b5e;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:5px}.btn:hover{filter:brightness(.97)}.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.danger{color:var(--danger)}.btn.soft{background:var(--soft);color:#1b59c7;border-color:#d7e4ff}.btn.small{padding:5px 9px;font-size:11px}.btn.full{width:100%}.btn:disabled{opacity:.5;cursor:not-allowed}
-.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}.side{background:var(--navy);color:white;padding:25px 13px;position:sticky;top:0;height:100vh;overflow:auto}.brand{display:flex;gap:10px;align-items:center;font-size:21px;font-weight:800;margin:0 10px 22px}.brand .mark{background:#28497d;color:white}.side button{display:block;width:100%;text-align:right;margin:2px 0;background:transparent;border:0;color:#c6d4ee;padding:11px 14px;border-radius:10px;font-weight:700}.side button.active,.side button:hover{background:#284676;color:white}.side footer{padding:18px 9px;color:#98afd5;font-size:11px}.main{padding:25px 28px;min-width:0}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.top h1{font-size:24px;margin:0}.top .sub{color:var(--mut);font-size:12px}.actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:13px;margin-bottom:17px}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:0 4px 19px #1e31500a}.stat{padding:17px}.stat strong{display:block;font-size:24px;margin-top:7px;line-height:1.35}.stat .mut{font-size:11px}.panel{padding:17px;margin-bottom:15px}.panel h2{margin:0 0 13px;font-size:16px}.toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px}.toolbar input,.toolbar select{max-width:245px}.table-scroll{overflow:auto;border-radius:10px;border:1px solid var(--line)}table{border-collapse:collapse;width:100%;min-width:650px;background:#fff}th,td{text-align:right;padding:10px 12px;border-bottom:1px solid #eef0f5;white-space:nowrap}th{background:#f8faff;color:#5a6883;font-size:11px;font-weight:800}tr:last-child td{border:0}tbody tr:hover{background:#fafbfe}.pill{display:inline-block;border-radius:50px;padding:3px 9px;background:#e8eef9;color:#435875;font-size:11px;font-weight:800}.pill.ok{background:#def8ef;color:#117857}.pill.warn{background:#fff1d9;color:#9b6b12}.pill.bad{background:#ffe5eb;color:#b53c52}.empty{padding:28px;text-align:center;color:var(--mut)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.fine{font-size:11px;color:var(--mut)}.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.filters>*{max-width:220px}.overlay{position:fixed;inset:0;z-index:3000;background:#101e38aa;display:grid;place-items:center;padding:14px}.modal{background:white;width:min(650px,100%);max-height:92vh;overflow:auto;padding:21px;border-radius:16px;box-shadow:0 18px 60px #08132b33}.modal h2{margin:0 0 16px;font-size:19px}.modal .cols{display:grid;grid-template-columns:1fr 1fr;gap:11px}.modal .cols>div{min-width:0}.modal .footer{display:flex;gap:8px;justify-content:flex-start;margin-top:17px;border-top:1px solid var(--line);padding-top:14px}.check{width:auto;vertical-align:middle}.alert{padding:12px 14px;border-radius:10px;background:#fff4e5;color:#93601b;margin-bottom:12px}.notice{padding:11px 15px;border-radius:10px;background:#e6f3ff;color:#235c9b;margin-bottom:13px}.toast{position:fixed;bottom:24px;left:24px;z-index:4000;background:#142747;color:#fff;padding:12px 18px;border-radius:11px;box-shadow:0 8px 35px #0d1b3652;max-width:400px}.toast.error{background:#b43a4c}.account{font-weight:800;color:#204f9f}.perm{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin:7px 0;padding:7px;border-bottom:1px solid var(--line)}.perm input{width:auto}.map{height:400px;border-radius:12px;z-index:1}.hidden{display:none!important}
-@media(max-width:950px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}.main{padding:18px}.shell{grid-template-columns:180px minmax(0,1fr)}.side{padding:16px 8px}}
-@media(max-width:640px){.shell{display:block}.side{position:relative;height:auto;padding:10px 12px}.brand{margin:0 0 10px}.side nav{display:flex;gap:5px;overflow:auto}.side button{white-space:nowrap;width:auto;padding:8px 11px}.side footer{display:none}.top{align-items:flex-start;flex-direction:column}.main{padding:12px}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:19px}.modal .cols{grid-template-columns:1fr}.toolbar input,.toolbar select{max-width:100%}}
-
-
-.nav-group{font-size:10px;color:#8ea9db;padding:14px 15px 5px;font-weight:800;letter-spacing:.03em}
-.flowsteps{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}.flowsteps span{background:#eff4ff;border:1px solid #dbe6fb;padding:7px 13px;border-radius:25px;color:#315995;font-weight:800;font-size:11px}.flowsteps span.current{background:#2869df;color:white}
-.summaryrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}.summaryrow div{padding:10px 15px;background:#f5f8fd;border:1px solid #e7edf7;border-radius:9px;flex:1;min-width:120px}.summaryrow b{display:block;font-size:16px}
-.mini{font-size:11px;color:var(--mut);line-height:1.8}.section-title{font-size:13px;font-weight:800;color:#536789;margin:12px 0}
-
-</style>
-</head>
-<body><div id="root"><div class="login"><div class="login-card">جارٍ تحميل مسار...</div></div></div><div id="toast" aria-live="polite"></div>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f7fb"><title>مَسار | إدارة الشحن</title><style>@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#15253a;font-family:Cairo,Arial,sans-serif;font-size:14px}button,input,select{font:inherit}button{cursor:pointer;background:#275ddb;border:0;border-radius:9px;color:white;font-weight:700;padding:11px 17px;white-space:nowrap}button:hover{filter:brightness(.95)}button:disabled{opacity:.45;cursor:not-allowed}a{color:#285ccc;text-decoration:none}.shell{min-height:100vh;display:flex}.shell aside{width:246px;min-height:100vh;background:#fff;border-left:1px solid #e5eaf2;display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;padding:30px 18px}.brand{display:flex;align-items:center;gap:12px;padding:0 4px 36px}.brandmark{width:45px;height:45px;background:#275ddb;color:white;border-radius:13px;display:grid;place-items:center;font-size:30px;font-weight:800}.brand b{font-size:23px;line-height:1;display:block}.brand small,.sidefoot small{color:#8b98a8;font-size:10px;display:block;margin-top:5px}.sidetitle{font-size:11px;font-weight:700;color:#a8b2c1;margin:0 12px 12px}nav{display:flex;flex-direction:column;gap:5px}nav button{display:flex;align-items:center;gap:13px;text-align:right;color:#758396;font-weight:700;background:transparent;padding:12px;border-radius:9px}nav button span{font-size:20px;width:22px;text-align:center}nav button.active{color:#285cda;background:#ecf2ff} .sidefoot{margin-top:auto;border-top:1px solid #edf0f4;padding:22px 3px 0;display:flex;align-items:center;gap:10px;overflow:hidden}.avatar{background:#eaf0ff;color:#275ddb;font-weight:800;width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:50%}main{margin-right:246px;width:calc(100% - 246px);padding:32px 4.2% 60px;max-width:1700px}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}.eyebrow{font-size:12px;color:#9aa7b7}.eyebrow span{margin:0 8px}h1{font-size:25px;margin:6px 0 0;line-height:1.3}h2{font-size:28px;line-height:1.4;margin:13px 0 6px}h3{font-size:16px;margin:0}p{margin:4px 0;color:#8a98aa}small{display:block}.header-actions{display:flex;align-items:center;gap:18px}.header-actions a{font-size:12px;color:#8290a3}.online{color:#33a879;font-size:11px;background:#eaf8f1;padding:7px 11px;border-radius:20px}.welcome{background:linear-gradient(112deg,#133990,#2d65df);color:white;border-radius:16px;min-height:197px;display:flex;align-items:center;justify-content:space-between;padding:27px 38px;overflow:hidden}.welcome p{color:#c6d6fb}.welcome button{background:#fff;color:#275ddb;margin-top:16px}.pill{color:#ccdafa;font-size:11px;font-weight:700}.hero-icon{font-size:104px;line-height:1;color:#83aafa66;position:relative;margin-left:8%;transform:rotate(-8deg)}.hero-icon span{font-size:52px;color:#c1d4ff99;position:absolute;top:-6px;left:-25px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:20px 0}.stats article,.card{background:#fff;border:1px solid #e8edf4;border-radius:13px;box-shadow:0 4px 18px #25396106}.stats article{padding:21px}.stats article span{color:#8391a4;font-weight:600;font-size:12px}.stats article b{display:block;font-size:27px;margin:7px 0 0}.stats article small{color:#a3afbd;font-size:11px}.card{padding:24px;min-width:0}.cardhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}.cardhead p{font-size:12px;margin-top:4px}.subtle{background:#f0f4fc;color:#3563c9;padding:8px 12px;font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}.space{margin-top:18px}.empty{text-align:center;padding:54px 15px;color:#586b82}.empty div{width:54px;height:54px;background:#f1f5fc;color:#9ab1da;border-radius:16px;display:grid;place-items:center;font-size:24px;margin:0 auto 10px}.empty p{font-size:12px}.toolbar,.assign{display:flex;gap:10px;align-items:center;margin-bottom:16px}.toolbar input{flex:1}.toolbar select{width:160px}.assign{background:#f7f9fd;border-radius:9px;padding:9px 12px;color:#8290a3;font-size:12px}.assign select{width:auto;min-width:155px;margin-right:auto}.assign button{padding:9px 13px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:right;font-size:12px}th{color:#98a5b5;background:#f8f9fc;font-size:11px;font-weight:700;white-space:nowrap}td,th{padding:13px 10px;border-bottom:1px solid #edf1f5;vertical-align:middle}td{color:#4c5e72}td b{color:#243852}td small{color:#95a2b1;margin-top:4px;min-width:80px}.badge,.tag{display:inline-block;border-radius:7px;padding:5px 9px;background:#eef2fa;color:#6c809a;white-space:nowrap;font-size:11px;font-weight:700}.badge.delivered{background:#e9f8f1;color:#23986d}.badge.transit{background:#eef3ff;color:#4772d8}.badge.postponed{background:#fff6df;color:#c38922}.badge.returned{background:#fff0ef;color:#ce6b62}.statusform{display:flex;gap:5px;min-width:260px}.statusform select,.statusform input{padding:6px;width:95px;font-size:11px}.statusform button{padding:6px}.notice,.hint{background:#eff5ff;border:1px solid #dce9ff;color:#4b6a9a;border-radius:9px;padding:13px 16px;margin:0 0 18px;font-size:12px}.notice{display:flex;justify-content:space-between}.notice button{background:transparent;padding:0;color:#6381b1;font-size:18px}.hint{margin:18px 0 0;line-height:1.9}.top-hint{margin:0 0 18px}label{display:block;color:#596d83;font-weight:700;font-size:12px;margin-bottom:16px}input,select{display:block;width:100%;border:1px solid #e2e8f1;border-radius:8px;padding:10px 12px;margin-top:7px;background:white;color:#344b65;outline:none}input:focus,select:focus{border-color:#7197ec}input[type=checkbox]{width:auto;margin:0}.mapping{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.formactions{display:flex;gap:8px}.muted{font-size:11px;margin-top:15px}.listrow{border-bottom:1px solid #edf1f5;padding:15px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}.listrow small{color:#9ba9b8;font-size:11px;margin-top:4px;overflow-wrap:anywhere}.upload{border:1px dashed #b7c9ed;background:#f8faff;border-radius:11px;min-height:165px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#435f8d;text-align:center;padding:20px}.upload b{font-size:32px;color:#6c91e5}.upload span{font-size:11px;color:#a0adc0;margin-top:5px}.upload input{max-width:250px;font-size:11px}.sectiontitle{font-weight:800;margin:12px 0 18px}.sectiontitle span{color:#92a0b1;font-size:11px;font-weight:500}.balance{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f7f9fd;border-radius:9px;padding:14px;margin:12px 0 18px}.balance small{color:#98a5b5;font-size:10px}.balance b{font-size:13px}.loading{padding:70px;text-align:center;color:#789}
+@media(max-width:850px){.shell{display:block}.shell aside{position:static;width:100%;min-height:auto;padding:14px}.brand{padding:0 0 12px}.brandmark{width:38px;height:38px}.sidetitle,.sidefoot{display:none}nav{flex-direction:row;overflow:auto;gap:3px}nav button{padding:8px 10px;font-size:11px;gap:6px}nav button span{font-size:15px}main{margin:0;width:100%;padding:22px 16px}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.welcome{padding:25px}.hero-icon{font-size:70px;margin:0}.header-actions .online{display:none}h1{font-size:22px}.toolbar,.assign{flex-wrap:wrap}.assign select{margin:0}.statusform{min-width:240px}}
+.datebar{display:flex;align-items:center;gap:15px;background:#fff;border:1px solid #e8edf4;border-radius:13px;padding:15px 20px;margin-bottom:18px}.datebar>div{margin-left:auto}.datebar small{color:#98a5b5;margin-top:3px;font-size:11px}.datebar label{margin:0;display:flex;align-items:center;gap:9px}.datebar input{margin:0;width:165px}.moneygrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}.moneygrid>div{border:1px solid #edf1f7;background:#f8fafe;border-radius:9px;padding:13px;min-width:0}.moneygrid small{color:#8393a8;font-size:11px}.moneygrid b{display:block;margin-top:6px;font-size:16px}.moneygrid .highlight{background:#eaf2ff;color:#2055c6}.cashgrid{grid-template-columns:repeat(3,1fr)}.preview-picker{margin-bottom:18px}.preview-picker label{margin:0}.drivercards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}.drivercard{border:1px solid #e4ebf6;background:#fbfcff;border-radius:12px;padding:16px}.drivercard .cardhead{margin-bottom:12px}.drivercard h3{font-size:15px}.drivercard p{color:#61748b;margin:7px 0}.drivercard .call{display:block;margin:12px 0;font-weight:700}.drivercard .statusform{min-width:0;flex-wrap:wrap}.drivercard .statusform input,.drivercard .statusform select{width:auto;flex:1;min-width:100px}.drivercard .hint{margin:10px 0 0}@media(max-width:850px){.datebar{flex-wrap:wrap}.datebar>div{width:100%}.moneygrid{grid-template-columns:repeat(2,1fr)}.drivercards{grid-template-columns:1fr}}
+.shipdate{font-size:12px;color:#8290a3}.shipdate input{flex:0 1 170px}.shipdate select{width:150px}
+.checkline{display:flex;align-items:center;gap:9px;margin-top:18px}.checkline input{width:auto;margin:0}
+.location-share{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#eef5ff;border:1px solid #d8e6fd;border-radius:12px;padding:16px 18px;margin-bottom:18px}.location-share p{font-size:12px;margin:3px 0}.location-share small{color:#466da5;margin-top:5px}.danger-outline{background:#fff;color:#bd4b46;border:1px solid #f0ccca}.location-box{background:#f1f5fc;border-radius:9px;padding:12px;margin-top:15px}.location-box b,.location-box small,.location-box a{display:block}.location-box small{color:#8494a6;margin-top:5px}.location-box a{margin-top:10px;font-size:12px;font-weight:700}.monitor-stats{display:grid;gap:7px;color:#7c8da1;font-size:12px}.monitor-stats b{color:#344b65}@media(max-width:850px){.location-share{align-items:flex-start;flex-direction:column}}
+.correction-form{display:grid;gap:6px;min-width:210px}.correction-form small{white-space:normal;line-height:1.6;color:#9a7890}.correction-form input,.correction-form select{margin:0;font-size:11px;padding:7px}
+.login{margin:0 auto;width:min(100%,500px);padding:8vh 18px}.login-card{background:#fff;padding:32px;border:1px solid #e8edf4;border-radius:16px}.login-card .brand{padding:0 0 20px}.login-card h1{margin-bottom:10px}.login-card form{margin-top:24px}.login-card form button{width:100%}
+</style></head><body><div id="root"><div class="loading">جاري تحميل مَسار...</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-(function(){
-'use strict';
-var SUPA='https://shhpnnmkpqyjgvgcymhb.supabase.co', PUB='sb_publishable_em6I-rn6KboICFVqaZKkVg_kk-zw35n', API=SUPA+'/functions/v1/masar-api';
-var auth=window.supabase&&window.supabase.createClient(SUPA,PUB,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-var state={data:null,session:null,tab:'dashboard',search:'',company:'',status:'',date:'',selected:new Set(),watch:null,lastSent:0,map:null,driverId:''};
-var root=document.getElementById('root'), A=['shipments','companies','drivers','settlements','accounts'], areaNames={shipments:'الشحنات',companies:'الشركات',drivers:'المناديب',settlements:'التسويات',accounts:'الخزنة'};
-var statuses={new:'جديدة',transit:'مع المندوب',delivered:'تم التسليم',partial:'تسليم جزئي',postponed:'مؤجلة',returned:'مرتجعة',returned_visit:'مرتجع مع تحصيل التوصيل'};
-var money=function(n){return ((Number(n)||0)/100).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})+' ج.م';};
-var egp=function(n){return Math.round(Number(n||0)*100)};
-var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
-var dt=function(d){if(!d)return '—';var x=new Date(d);return isNaN(x.getTime())?'—':x.toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short',timeZone:'Africa/Cairo'})};
-var day=function(d){if(!d)return '';return new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit',timeZone:'Africa/Cairo'}).format(new Date(d))};
-var sum=function(a,fn){return (a||[]).reduce(function(t,x){return t+(Number(fn(x))||0)},0)};
-var role=function(){return state.data&&state.data.role||''};
-var owner=function(){return role()==='owner'};
-var can=function(area,edit){return owner()||!!(state.data&&state.data.permissions&&state.data.permissions[area]&&state.data.permissions[area][edit?'edit':'view'])};
-var data=function(k){return state.data&&state.data[k]||[]};
-var byId=function(k,id){return data(k).find(function(x){return Number(x.id)===Number(id)})};
-var button=function(title,action,id,style){return '<button type="button" class="btn small '+(style||'')+'" data-act="'+action+'" data-id="'+esc(id||'')+'">'+esc(title)+'</button>'};
-var pill=function(s){return '<span class="pill '+(s==='delivered'?'ok':s==='partial'||s==='postponed'?'warn':s==='returned'?'bad':'')+'">'+esc(statuses[s]||s)+'</span>'};
-var table=function(headers,rows){return rows.length?'<div class="table-scroll"><table><thead><tr>'+headers.map(function(h){return '<th>'+esc(h)+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(row){return '<tr>'+row.map(function(c){return '<td>'+c+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>':'<div class="empty">لا توجد بيانات هنا حاليًا</div>'};
-var panel=function(title,body){return '<div class="panel"><h2>'+esc(title)+'</h2>'+body+'</div>'};
-var stat=function(label,v){return '<div class="stat"><span class="mut">'+esc(label)+'</span><strong>'+v+'</strong></div>'};
-var errText=function(e){return e&&e.message||e&&e.error||String(e)};
-function toast(msg,isError){var el=document.getElementById('toast');el.className='toast'+(isError?' error':'');el.textContent=msg;clearTimeout(toast.id);toast.id=setTimeout(function(){el.className='';el.textContent=''},3900)}
-async function call(op,body){if(!state.session)throw Error('سجّل الدخول');var res=await fetch(API,{method:op?'POST':'GET',headers:{'apikey':PUB,'authorization':'Bearer '+state.session.access_token,'content-type':'application/json'},body:op?JSON.stringify(Object.assign({op:op},body||{})):undefined,cache:'no-store'});var ans=await res.json().catch(function(){return {error:'تعذر قراءة رد الخدمة'}});if(!res.ok||ans.error)throw Error(ans.error||'خطأ '+res.status);return ans}
-async function load(quiet){try{state.data=await call();if(role()==='driver'&&state.tab!=='driver')state.tab='driver';if(!quiet)toast('تم تحديث البيانات');draw()}catch(e){state.data=null;draw();toast(errText(e),true)}}
-function loginView(){root.innerHTML='<div class="login"><div class="login-card"><div class="mark">م</div><h1>مَسار</h1><p class="mut">نظام إدارة شركة الشحن والتوصيل</p><form id="login-form"><div class="form-row"><label>البريد الإلكتروني لصاحب الشركة أو رقم المستخدم</label><input name="login" autocomplete="username" required placeholder="البريد أو الرقم المخصص لك"></div><div class="form-row"><label>كلمة المرور</label><input name="password" type="password" autocomplete="current-password" required></div><button class="btn primary full" type="submit">تسجيل الدخول</button></form><p class="fine" style="margin-top:17px">حسابات المناديب والموظفين بتتعمل من لوحة صاحب الشركة. مش محتاج حساب ChatGPT.</p></div></div>'}
-function menus(){
-var groups=[
-['الرئيسية',[['dashboard','نظرة عامة',true]]],
-['التشغيل',[['companies','الشركات',can('companies')||can('shipments')],['import','استيراد Excel',can('shipments',true)],['shipments','كل الشحنات',can('shipments')||can('settlements')],['distribution','توزيع الشحنات',can('shipments',true)],['tracking','متابعة الشحنات',can('shipments')],['drivers','المناديب',can('drivers')||can('shipments')],['driver-monitor','أداء المناديب',can('drivers')||can('shipments')],['locations','مواقع المناديب',owner()]]],
-['الحسابات والتقارير',[['daily','الحساب اليومي',can('settlements')],['settlements','التحصيل والتسويات',can('settlements')],['accounts','الخزنة وحساب الشركة',can('accounts')],['reports','تقارير الشركات وExcel',can('shipments')||can('settlements')]]],
-['الإعدادات',[['users','المستخدمون والصلاحيات',owner()],['backup','استيراد نسخة قديمة',owner()]]]
-];
-return groups.map(function(group){var entries=group[1].filter(function(x){return x[2]});if(!entries.length)return '';return '<div class="nav-group">'+group[0]+'</div>'+entries.map(function(x){return '<button data-tab="'+x[0]+'" class="'+(state.tab===x[0]?'active':'')+'">'+x[1]+'</button>'}).join('')}).join('')
+if(!window.React||!window.ReactDOM||!window.supabase||!window.XLSX){document.getElementById('root').innerHTML='<div class="login"><div class="login-card"><h2>تعذّر تحميل بعض مكونات مسار</h2><p>تحقق من اتصال الإنترنت وأعد تحميل الصفحة.</p></div></div>';}else{
+const React = window.React;
+const ReactDOM = window.ReactDOM;
+const XLSX = window.XLSX;
+const { useEffect, useState, useRef } = React;
+const createRoot = ReactDOM.createRoot;
+const createClient = window.supabase.createClient;
+const dateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' });
+function businessDate(value) { const date = new Date(value); if (!Number.isFinite(date.getTime()))
+    return ''; const parts = dateFormatter.formatToParts(date), part = (n) => parts.find(p => p.type === n)?.value || ''; return `${part('year')}-${part('month')}-${part('day')}`; }
+const isFinal = (s) => ['delivered', 'partial', 'returned_visit'].includes(s.status) && !!s.delivered;
+const collected = (s) => s.status === 'delivered' ? s.total : (['partial', 'returned_visit'].includes(s.status) ? s.collected || 0 : 0);
+const companyDue = (s) => s.status === 'delivered' || s.status === 'partial' ? collected(s) - s.delivery : 0;
+const driverDue = (s) => isFinal(s) ? collected(s) - s.driver_fee : 0;
+const driverFee = (s) => isFinal(s) ? s.driver_fee : 0;
+function dayAccount(shipments, payments, type, id, day) { const items = shipments.filter(s => isFinal(s) && (type === 'driver' ? s.driver_id === id : s.company_id === id)); const paid = payments.filter(p => p.type === type && p.party_id === id); const value = type === 'driver' ? driverDue : companyDue; const sum = (arr, fn) => arr.reduce((a, x) => a + fn(x), 0); const before = items.filter(s => businessDate(s.delivered) < day), current = items.filter(s => businessDate(s.delivered) === day), paidBefore = paid.filter(p => businessDate(p.created) < day), paidToday = paid.filter(p => businessDate(p.created) === day); const opening = sum(before, value) - sum(paidBefore, p => p.amount), accrued = sum(current, value), settled = sum(paidToday, p => p.amount); return { opening, accrued, settled, closing: opening + accrued - settled, items: current, payments: paidToday, received: sum(current, collected), fees: sum(current, driverFee) }; }
+function companyDay(shipments, payments, day) { const list = shipments.filter(s => isFinal(s) && businessDate(s.delivered) === day), dayPay = payments.filter(p => businessDate(p.created) === day), sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0), shipping = sum(list, s => s.delivery), commissions = sum(list, driverFee), fromDrivers = sum(dayPay.filter(p => p.type === 'driver'), p => p.amount), toCompanies = sum(dayPay.filter(p => p.type === 'company'), p => p.amount); return { count: list.length, collected: sum(list, collected), shipping, commissions, earned: shipping - commissions, fromDrivers, toCompanies, netCash: fromDrivers - toCompanies }; }
+// Return one snapshot for each shipment known by the requested Cairo business day.
+function companyReport(shipments, events, companyId, day, today) {
+    return shipments.filter(s => s.company_id === companyId && s.created && businessDate(s.created) <= day).map(s => {
+        const prior = events.filter(e => e.shipment_id === s.id && e.created && businessDate(e.created) <= day).sort((a, b) => a.created.localeCompare(b.created) || Number(a.id) - Number(b.id));
+        let last = prior.at(-1);
+        let status = last?.status || '';
+        let note = last?.note || '';
+        // Delivery time existed before event tracking; use it without fabricating other past movements.
+        if (s.delivered && businessDate(s.delivered) <= day && (!last || s.delivered > last.created)) {
+            status = ['delivered', 'partial', 'returned_visit'].includes(s.status) ? s.status : 'unknown';
+            note = s.notes || '';
+        }
+        if (!status && s.status === 'new')
+            status = 'new';
+        // Current state is reliable as of today; older unrecorded states stay unknown.
+        if (!status && day === today) {
+            status = s.status;
+            note = s.notes || '';
+        }
+        return { shipment: s, status: status || 'unknown', note };
+    });
 }
-function draw(){if(!state.session){loginView();return}if(!state.data){root.innerHTML='<div class="login"><div class="login-card">تعذر تحميل بيانات الحساب '+button('حاول مجددًا','reload',0,'primary')+'</div></div>';return}
-var isDriver=role()==='driver',tabs={dashboard:'لوحة المتابعة',import:'استيراد Excel',distribution:'توزيع الشحنات',tracking:'متابعة الشحنات',daily:'الحساب اليومي', 'driver-monitor':'أداء المناديب',shipments:'إدارة الشحنات',companies:'الشركات',drivers:'المناديب',locations:'متابعة الموقع',settlements:'التحصيل والتسويات',accounts:'الخزنة',reports:'التقارير والتصدير',users:'المستخدمون والصلاحيات',backup:'استيراد البيانات السابقة',driver:'مهام المندوب'};
-var body=isDriver?driverView():({dashboard:dashboard,import:importView,distribution:distributionView,tracking:trackingView,daily:dailyView,'driver-monitor':driverMonitorView,shipments:shipmentsView,companies:companiesView,drivers:driversView,locations:locationsView,settlements:settlementsView,accounts:accountsView,reports:reportsView,users:usersView,backup:backupView}[state.tab]||dashboard)();
-root.innerHTML='<div class="shell"><aside class="side"><div class="brand"><span class="mark">م</span><span>مَسار</span></div><nav>'+(isDriver?'<button class="active" data-tab="driver">مهامي وحسابي</button>':menus())+'</nav><footer>Masar Shipping · نظام خاص بالشركة</footer></aside><main class="main"><header class="top"><div><h1>'+esc(isDriver?'بوابة المندوب':tabs[state.tab])+'</h1><div class="sub">'+(isDriver?'الشحنات المسندة إليك':'إدارة الشحن والتسوية والمتابعة من مكان واحد')+'</div></div><div class="actions"><span class="fine">'+esc(isDriver?state.data.driver.name:role()==='owner'?'صاحب الشركة':'موظف')+'</span>'+button('تحديث','reload')+button('خروج','logout',0,'danger')+'</div></header>'+body+'</main></div>';
-if(state.tab==='locations'&&!isDriver)paintMap();
+// ORIGINAL: src/backend.ts
+const url = 'https://shhpnnmkpqyjgvgcymhb.supabase.co';
+const key = 'sb_publishable_em6I-rn6KboICFVqaZKkVg_kk-zw35n';
+const auth = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+const numericEmail = (value) => /^\d{4,12}$/.test(value.trim()) ? 'ebrahemawad22+masar.' + value.trim() + '@gmail.com' : value.trim();
+async function apiFetch(_url, options = {}) { const { data } = await auth.auth.getSession(); if (!data.session)
+    throw new Error('سجّل الدخول'); const headers = new Headers(options.headers); headers.set('apikey', key); headers.set('Authorization', 'Bearer ' + data.session.access_token); return fetch(url + '/functions/v1/masar-api', { ...options, headers }); }
+const fmt = (n) => ((n || 0) / 100).toLocaleString('ar-EG', { maximumFractionDigits: 2 }) + ' ج.م';
+const cents = (v) => Math.round(Number(String(v).replace(/[٠-٩]/g, (c) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(c))).replace(/,/g, '')) * 100);
+const labels = { new: 'جديدة', transit: 'مع المندوب', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة' };
+const fields = [['tracking', 'رقم الشحنة'], ['customer', 'اسم العميل'], ['phone', 'رقم التليفون'], ['address', 'العنوان'], ['product', 'اسم المنتج'], ['total', 'قيمة الأوردر']];
+function Button({ children, ...p }) { return React.createElement("button", { ...p }, children); }
+function Dashboard({ user }) {
+    const [data, setData] = useState(null), [tab, setTab] = useState('overview'), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [edit, setEdit] = useState(null), [file, setFile] = useState([]), [headers, setHeaders] = useState([]), [map, setMap] = useState({}), [company, setCompany] = useState(''), [selected, setSelected] = useState([]), [target, setTarget] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [day, setDay] = useState(() => businessDate(new Date())), [previewDriver, setPreviewDriver] = useState(''), [shipDay, setShipDay] = useState(''), [shipDayField, setShipDayField] = useState('created');
+    const reload = async () => { let r = await apiFetch('/api/data', { cache: 'no-store' }); let x = await r.json(); if (!r.ok) {
+        setMsg(x.error);
+        return;
+    } setData(x); };
+    useEffect(() => { reload(); }, []);
+    useEffect(() => { if (!data?.owner || tab !== 'monitor')
+        return; const timer = setInterval(() => { void reload(); }, 30000); return () => clearInterval(timer); }, [data?.owner, tab]);
+    const act = async (body, after) => { setBusy(true); setMsg(''); try {
+        let r = await apiFetch('/api/data', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+        let x = await r.json();
+        if (!r.ok)
+            throw Error(x.error);
+        await reload();
+        after?.();
+        setMsg('تم الحفظ بنجاح');
+    }
+    catch (e) {
+        setMsg(e.message || 'حصل خطأ، حاول تاني');
+    }
+    finally {
+        setBusy(false);
+    } };
+    const sample = () => { let ws = XLSX.utils.json_to_sheet([{ 'رقم الشحنة': 'SH001', 'اسم العميل': 'أحمد محمد', 'رقم التليفون': '01012345678', 'العنوان': 'القاهرة - مدينة نصر', 'اسم المنتج': 'سماعة', 'قيمة الأوردر': 250 }, { 'رقم الشحنة': 'SH002', 'اسم العميل': 'سارة علي', 'رقم التليفون': '01123456789', 'العنوان': 'الجيزة - الدقي', 'اسم المنتج': 'حقيبة', 'قيمة الأوردر': 400 }]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'الشحنات'); XLSX.writeFile(wb, 'نموذج_شحنات.xlsx'); };
+    const exportData = () => { if (!data?.owner)
+        return; const wb = XLSX.utils.book_new(); const sheets = [['تعليمات', [{ ملاحظة: 'نسخة تصدير للمراجعة والحفظ اليدوي؛ الاستعادة التلقائية غير متاحة بعد.', تاريخ_التصدير: new Date().toISOString(), العملة: 'القرش: اقسم المبالغ المخزنة على 100 للحصول على الجنيه' }]], ['الشركات', data.companies || []], ['المناديب', data.drivers || []], ['الشحنات', data.shipments || []], ['التسويات', data.payments || []], ['الخزنة', data.cashEntries || []], ['المديرون', data.users || []], ['صلاحيات المناديب', data.driverPermissions || []], ['سجل الشحنات', data.shipmentEvents || []], ['إقفالات المناديب', data.closures || []], ['تصحيحات الشحنات', data.corrections || []]]; for (const [name, rows] of sheets) {
+        const safe = rows.map(row => Object.fromEntries(Object.entries(row).map(([key, val]) => [key, typeof val === 'object' && val !== null ? JSON.stringify(val) : val])));
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(safe.length ? safe : [{ 'ملاحظة': 'لا توجد بيانات' }]), name);
+    } XLSX.writeFile(wb, 'masar-export-' + businessDate(new Date()) + '.xlsx'); };
+    const upload = async (e) => { try {
+        let f = e.target.files?.[0];
+        if (!f)
+            return;
+        let wb = XLSX.read(await f.arrayBuffer(), { type: 'array', cellText: true });
+        let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: false });
+        if (!rows.length)
+            throw Error('الملف فاضي');
+        let hs = Object.keys(rows[0]);
+        let m = {};
+        for (const [key, label] of fields)
+            m[key] = hs.find(h => h.trim() === label) || '';
+        setFile(rows);
+        setHeaders(hs);
+        setMap(m);
+        setMsg('راجع الأعمدة والشحنات قبل الاستيراد');
+    }
+    catch (e) {
+        setMsg(e.message || 'تعذر قراءة الملف');
+    } };
+    if (!data)
+        return React.createElement("div", { className: "loading" }, msg || 'جاري تحميل مساحة العمل...');
+    const owner = data.role !== 'driver', actualOwner = data.role === 'owner', perms = data.permissions || {}, allowed = (area, action = 'view') => actualOwner || Boolean(perms[area]?.[action]), cashEntries = data.cashEntries || [], staffUsers = data.users || [];
+    const ss = data.shipments || [], companies = data.companies || [], drivers = data.drivers || [], payments = data.payments || [];
+    const companyName = (id) => companies.find(x => x.id === id)?.name || '—', driverName = (id) => drivers.find(x => x.id === id)?.name || 'غير معين';
+    let visible = ss.filter(s => (filter === 'all' || s.status === filter) && (!shipDay || (s[shipDayField] && businessDate(s[shipDayField]) === shipDay)) && [s.tracking, s.customer, s.phone, s.address].some(x => String(x || '').toLowerCase().includes(search.toLowerCase())));
+    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(actualOwner ? [['monitor', 'متابعة المناديب', '◎'], ['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
+    return React.createElement("div", { className: "shell" },
+        React.createElement("aside", null,
+            React.createElement("div", { className: "brand" },
+                React.createElement("span", { className: "brandmark" }, "\u2197"),
+                React.createElement("div", null,
+                    React.createElement("b", null, "\u0645\u064E\u0633\u0627\u0631"),
+                    React.createElement("small", null, "\u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u0634\u062D\u0646 \u0648\u0627\u0644\u062A\u0648\u0635\u064A\u0644"))),
+            React.createElement("div", { className: "sidetitle" }, "\u0645\u0633\u0627\u062D\u0629 \u0627\u0644\u0639\u0645\u0644"),
+            React.createElement("nav", null, nav.map(([k, t, i]) => React.createElement("button", { key: k, className: tab === k ? 'active' : '', onClick: () => { setTab(k); setMsg(''); } },
+                React.createElement("span", null, i),
+                t))),
+            React.createElement("div", { className: "sidefoot" },
+                React.createElement("span", { className: "avatar" }, "\u0645"),
+                React.createElement("div", null,
+                    React.createElement("b", null, actualOwner ? 'صاحب الشركة' : owner ? 'مدير' : 'مندوب'),
+                    React.createElement("small", null, user)))),
+        React.createElement("main", null,
+            React.createElement("header", null,
+                React.createElement("div", null,
+                    React.createElement("div", { className: "eyebrow" },
+                        "\u0644\u0648\u062D\u0629 \u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u0634\u062D\u0646 ",
+                        React.createElement("span", null, " / "),
+                        " ",
+                        nav.find(n => n[0] === tab)?.[1] || 'شحناتي'),
+                    React.createElement("h1", null, nav.find(n => n[0] === tab)?.[1] || 'شحناتي')),
+                React.createElement("div", { className: "header-actions" },
+                    React.createElement("span", { className: "online" }, "\u25CF \u0645\u0633\u0627\u062D\u0629 \u062E\u0627\u0635\u0629"),
+                    React.createElement("button", { className: "subtle", onClick: () => auth.auth.signOut() }, "\u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062E\u0631\u0648\u062C"))),
+            msg && React.createElement("div", { className: "notice", role: "status" },
+                msg,
+                React.createElement("button", { onClick: () => setMsg('') }, "\u00D7")),
+            !owner && React.createElement(LocationShare, null),
+            actualOwner && tab === 'migration' && React.createElement(MigrationPanel, { act: act, busy: busy }),
+            actualOwner && tab === 'corrections' && React.createElement(CorrectionHistory, { corrections: data.corrections || [], shipments: ss }),
+            actualOwner && tab === 'monitor' && React.createElement(DriverMonitor, { drivers: drivers, shipments: ss, events: data.shipmentEvents || [], locations: data.locations || [], day: day, setDay: setDay, refresh: reload }),
+            owner && tab === 'overview' && React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "welcome" },
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "pill" }, "\u0646\u0638\u0631\u0629 \u0633\u0631\u064A\u0639\u0629 \u0639\u0644\u0649 \u0646\u0634\u0627\u0637\u0643"),
+                        React.createElement("h2", null, "\u0643\u0644 \u0634\u062D\u0646\u0627\u062A\u0643 \u0641\u064A \u0645\u0643\u0627\u0646 \u0648\u0627\u062D\u062F."),
+                        React.createElement("p", null, "\u062A\u0627\u0628\u0639 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0648\u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0648\u062D\u0633\u0627\u0628\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0627\u062A \u0628\u0633\u0647\u0648\u0644\u0629."),
+                        allowed('shipments', 'edit') && React.createElement("button", { onClick: () => setTab('import') }, "\uFF0B \u0627\u0633\u062A\u064A\u0631\u0627\u062F \u0634\u062D\u0646\u0627\u062A")),
+                    React.createElement("div", { className: "hero-icon" },
+                        "\u25A3",
+                        React.createElement("span", null, "\u2197"))),
+                React.createElement("div", { className: "stats" },
+                    React.createElement("article", null,
+                        React.createElement("span", null, "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0634\u062D\u0646\u0627\u062A"),
+                        React.createElement("b", null, ss.length),
+                        React.createElement("small", null, "\u0643\u0644 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u062C\u0644\u0629")),
+                    React.createElement("article", null,
+                        React.createElement("span", null, "\u0645\u0639 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628"),
+                        React.createElement("b", null, ss.filter(x => x.status === 'transit').length),
+                        React.createElement("small", null, "\u0641\u064A \u0637\u0631\u064A\u0642\u0647\u0627 \u0644\u0644\u0639\u0645\u0644\u0627\u0621")),
+                    React.createElement("article", null,
+                        React.createElement("span", null, "\u062A\u0645 \u0627\u0644\u062A\u0633\u0644\u064A\u0645"),
+                        React.createElement("b", null, ss.filter(x => x.status === 'delivered').length),
+                        React.createElement("small", null, "\u0634\u062D\u0646\u0627\u062A \u0645\u0643\u062A\u0645\u0644\u0629")),
+                    React.createElement("article", null,
+                        React.createElement("span", null, "\u0645\u0624\u062C\u0644\u0629 \u0623\u0648 \u0645\u0631\u062A\u062C\u0639\u0629"),
+                        React.createElement("b", null, ss.filter(x => ['postponed', 'returned'].includes(x.status)).length),
+                        React.createElement("small", null, "\u062A\u062D\u062A\u0627\u062C \u0644\u0644\u0645\u062A\u0627\u0628\u0639\u0629"))),
+                React.createElement("div", { className: "card" },
+                    React.createElement("div", { className: "cardhead" },
+                        React.createElement("div", null,
+                            React.createElement("h3", null, "\u0622\u062E\u0631 \u0627\u0644\u0634\u062D\u0646\u0627\u062A"),
+                            React.createElement("p", null, "\u062A\u0627\u0628\u0639 \u0623\u062D\u062F\u062B \u0639\u0645\u0644\u064A\u0627\u062A \u0627\u0644\u062A\u0648\u0635\u064A\u0644")),
+                        React.createElement("button", { className: "subtle", onClick: () => setTab('shipments') }, "\u0639\u0631\u0636 \u0627\u0644\u0643\u0644 \u2190")),
+                    ss.length ? React.createElement(ShipmentTable, { rows: ss.slice(0, 5), owner: owner, allowCorrection: actualOwner, readOnly: !allowed('shipments', 'edit'), companyName: companyName, driverName: driverName, selected: [], toggle: () => { }, act: act }) : React.createElement(Empty, { text: "\u0644\u0633\u0647 \u0645\u0641\u064A\u0634 \u0634\u062D\u0646\u0627\u062A", detail: "\u0623\u0636\u0641 \u0634\u0631\u0643\u0629 \u0648\u0627\u0631\u0641\u0639 \u0623\u0648\u0644 \u0645\u0644\u0641 \u0634\u062D\u0646\u0627\u062A \u0639\u0644\u0634\u0627\u0646 \u062A\u0628\u062F\u0623." }))),
+            !owner && data.driverAccess?.account && tab === 'overview' && React.createElement(DriverAccount, { driver: data.driver, shipments: ss, payments: payments, day: day, setDay: setDay, goShipments: () => setTab('shipments') }),
+            owner && tab === 'driver-preview' && React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "hint top-hint" }, "\u062F\u064A \u0645\u0639\u0627\u064A\u0646\u0629 \u0644\u062D\u0633\u0627\u0628 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0648\u0628\u064A\u0627\u0646\u0627\u062A\u0647 \u0627\u0644\u0641\u0639\u0644\u064A\u0629. \u062A\u0639\u062F\u064A\u0644 \u062D\u0627\u0644\u0629 \u0627\u0644\u0634\u062D\u0646\u0629 \u0647\u0646\u0627 \u064A\u0624\u062B\u0631 \u0639\u0644\u0649 \u0627\u0644\u0634\u062D\u0646\u0629 \u0627\u0644\u062D\u0642\u064A\u0642\u064A\u0629."),
+                React.createElement("div", { className: "card preview-picker" },
+                    React.createElement("label", null,
+                        "\u0627\u062E\u062A\u0631 \u0645\u0646\u062F\u0648\u0628 \u0644\u0644\u0645\u0639\u0627\u064A\u0646\u0629",
+                        React.createElement("select", { value: previewDriver, onChange: e => setPreviewDriver(e.target.value) },
+                            React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+                            drivers.map(d => React.createElement("option", { value: d.id, key: d.id }, d.name))))),
+                previewDriver && React.createElement(React.Fragment, null,
+                    React.createElement(DriverAccount, { driver: drivers.find(d => d.id === Number(previewDriver)), shipments: ss.filter(s => s.driver_id === Number(previewDriver)), payments: payments.filter(p => p.type === 'driver' && p.party_id === Number(previewDriver)), day: day, setDay: setDay }),
+                    React.createElement("div", { className: "card space" },
+                        React.createElement("h3", null, "\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+                        React.createElement(DriverShipments, { rows: ss.filter(s => s.driver_id === Number(previewDriver)), act: act })))),
+            (tab === 'shipments' || (!owner && tab === 'overview' && !data.driverAccess?.account)) && React.createElement("div", { className: "card" },
+                React.createElement("div", { className: "cardhead" },
+                    React.createElement("div", null,
+                        React.createElement("h3", null, owner ? 'إدارة الشحنات' : 'الشحنات المسندة إليك'),
+                        React.createElement("p", null, "\u0627\u0628\u062D\u062B \u0648\u062A\u0627\u0628\u0639 \u062D\u0627\u0644\u0629 \u0643\u0644 \u0634\u062D\u0646\u0629")),
+                    owner && allowed('shipments', 'edit') && React.createElement("button", { onClick: () => setTab('import') }, "\uFF0B \u0627\u0633\u062A\u064A\u0631\u0627\u062F \u0634\u062D\u0646\u0627\u062A")),
+                React.createElement("div", { className: "toolbar" },
+                    React.createElement("input", { placeholder: "\u2315  \u0627\u0628\u062D\u062B \u0628\u0627\u0644\u0627\u0633\u0645 \u0623\u0648 \u0631\u0642\u0645 \u0627\u0644\u0634\u062D\u0646\u0629 \u0623\u0648 \u0627\u0644\u0647\u0627\u062A\u0641", value: search, onChange: e => setSearch(e.target.value) }),
+                    React.createElement("select", { value: filter, onChange: e => setFilter(e.target.value) },
+                        React.createElement("option", { value: "all" }, "\u0643\u0644 \u0627\u0644\u062D\u0627\u0644\u0627\u062A"),
+                        Object.entries(labels).map(([k, v]) => React.createElement("option", { key: k, value: k }, v)))),
+                React.createElement("div", { className: "toolbar shipdate" },
+                    React.createElement("span", null, "\u062A\u0635\u0641\u064A\u0629 \u0628\u0627\u0644\u062A\u0627\u0631\u064A\u062E:"),
+                    React.createElement("select", { "aria-label": "\u0646\u0648\u0639 \u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0634\u062D\u0646\u0629", value: shipDayField, onChange: e => setShipDayField(e.target.value) },
+                        React.createElement("option", { value: "created" }, "\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0625\u0636\u0627\u0641\u0629"),
+                        React.createElement("option", { value: "delivered" }, "\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u062A\u0633\u0644\u064A\u0645")),
+                    React.createElement("input", { "aria-label": "\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0634\u062D\u0646\u0629", type: "date", value: shipDay, onChange: e => setShipDay(e.target.value) }),
+                    shipDay && React.createElement("button", { className: "subtle", onClick: () => setShipDay('') }, "\u0625\u0644\u063A\u0627\u0621 \u0627\u0644\u062A\u0627\u0631\u064A\u062E")),
+                owner && allowed('shipments', 'edit') && React.createElement("div", { className: "assign" },
+                    React.createElement("span", null,
+                        "\u062A\u0645 \u0627\u062E\u062A\u064A\u0627\u0631 ",
+                        selected.length,
+                        " \u0634\u062D\u0646\u0629"),
+                    React.createElement("select", { value: target, onChange: e => setTarget(e.target.value) },
+                        React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+                        drivers.map(d => React.createElement("option", { value: d.id, key: d.id }, d.name))),
+                    React.createElement("button", { disabled: !selected.length || !target || busy, onClick: () => act({ op: 'assign', ids: selected, driverId: target }, () => setSelected([])) }, "\u062A\u0648\u0632\u064A\u0639 \u0627\u0644\u0634\u062D\u0646\u0627\u062A")),
+                visible.length ? (owner ? React.createElement(ShipmentTable, { rows: visible, owner: owner, allowCorrection: actualOwner, readOnly: !allowed('shipments', 'edit'), companyName: companyName, driverName: driverName, selected: selected, toggle: (id) => setSelected(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]), act: act }) : React.createElement(DriverShipments, { rows: visible, act: act, access: data.driverAccess })) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u0634\u062D\u0646\u0627\u062A \u0644\u0644\u0639\u0631\u0636", detail: "\u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u062C\u062F\u064A\u062F\u0629 \u0647\u062A\u0638\u0647\u0631 \u0647\u0646\u0627 \u0628\u0639\u062F \u0625\u0636\u0627\u0641\u062A\u0647\u0627." })),
+            owner && tab === 'companies' && React.createElement("div", { className: "grid" },
+                React.createElement("div", { className: "card" },
+                    React.createElement("div", { className: "cardhead" },
+                        React.createElement("div", null,
+                            React.createElement("h3", null, edit ? 'تعديل الشركة' : 'إضافة شركة'),
+                            React.createElement("p", null, "\u062D\u062F\u062F \u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u0634\u062D\u0646 \u062D\u0633\u0628 \u0627\u0644\u0627\u062A\u0641\u0627\u0642 \u0645\u0639 \u0627\u0644\u0634\u0631\u0643\u0629"))),
+                    allowed('companies', 'edit') ? React.createElement(CompanyForm, { key: edit?.id || 'new', item: edit, busy: busy, save: (x) => act({ op: 'company', ...x }, () => setEdit(null)), cancel: () => setEdit(null) }) : React.createElement("p", null, "\u0635\u0644\u0627\u062D\u064A\u062A\u0643 \u0639\u0631\u0636 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0627\u062A \u0641\u0642\u0637.")),
+                React.createElement("div", { className: "card" },
+                    React.createElement("div", { className: "cardhead" },
+                        React.createElement("div", null,
+                            React.createElement("h3", null, "\u0627\u0644\u0634\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062A\u0639\u0627\u0642\u062F\u0629"),
+                            React.createElement("p", null,
+                                companies.length,
+                                " \u0634\u0631\u0643\u0629 \u0645\u0633\u062C\u0644\u0629"))),
+                    companies.length ? companies.map(c => React.createElement("div", { className: "listrow", key: c.id },
+                        React.createElement("div", null,
+                            React.createElement("b", null, c.name),
+                            React.createElement("small", null,
+                                c.phone || 'بدون رقم تواصل',
+                                " \u00B7 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 ",
+                                fmt(c.delivery),
+                                " \u00B7 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 ",
+                                fmt(c.driver_fee))),
+                        allowed('companies', 'edit') && React.createElement("button", { className: "subtle", onClick: () => setEdit(c) }, "\u062A\u0639\u062F\u064A\u0644"))) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u0634\u0631\u0643\u0627\u062A \u0645\u0636\u0627\u0641\u0629", detail: "\u0627\u0628\u062F\u0623 \u0628\u0625\u0636\u0627\u0641\u0629 \u0623\u0648\u0644 \u0634\u0631\u0643\u0629 \u0648\u0623\u0633\u0639\u0627\u0631\u0647\u0627." }))),
+            owner && tab === 'drivers' && React.createElement("div", { className: "grid" },
+                React.createElement("div", { className: "card" },
+                    React.createElement("div", { className: "cardhead" },
+                        React.createElement("div", null,
+                            React.createElement("h3", null, "\u0625\u0636\u0627\u0641\u0629 \u0645\u0646\u062F\u0648\u0628"),
+                            React.createElement("p", null, "\u062E\u0635\u0635 \u0644\u0647 \u0631\u0642\u0645 \u0645\u0633\u062A\u062E\u062F\u0645 \u0648\u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631"))),
+                    actualOwner ? React.createElement(DriverForm, { busy: busy, save: (x) => act({ op: 'provision', role: 'driver', ...x }) }) : React.createElement("p", null, "\u0635\u0644\u0627\u062D\u064A\u062A\u0643 \u0639\u0631\u0636 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0641\u0642\u0637."),
+                    React.createElement("div", { className: "hint" }, "\u0628\u0639\u062F \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u062D\u0633\u0627\u0628 \u064A\u0642\u062F\u0631 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u064A\u062F\u062E\u0644 \u0628\u0627\u0644\u0631\u0642\u0645 \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631. \u0644\u0627 \u062A\u0631\u0633\u0644 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0641\u064A \u0645\u062D\u0627\u062F\u062B\u0629 \u0639\u0627\u0645\u0629.")),
+                React.createElement("div", { className: "card" },
+                    React.createElement("div", { className: "cardhead" },
+                        React.createElement("div", null,
+                            React.createElement("h3", null, "\u0641\u0631\u064A\u0642 \u0627\u0644\u062A\u0648\u0635\u064A\u0644"),
+                            React.createElement("p", null,
+                                drivers.length,
+                                " \u0645\u0646\u062F\u0648\u0628 \u0645\u0633\u062C\u0644"))),
+                    drivers.length ? drivers.map(d => React.createElement("div", { className: "listrow", key: d.id },
+                        React.createElement("div", null,
+                            React.createElement("b", null, d.name),
+                            React.createElement("small", null,
+                                d.username ? 'رقم المستخدم: ' + d.username : 'دخول غير مفعّل',
+                                " \u00B7 ",
+                                d.phone || 'بدون هاتف')),
+                        React.createElement("div", null,
+                            React.createElement("span", { className: "tag" },
+                                ss.filter(s => s.driver_id === d.id && !isFinal(s)).length,
+                                " \u0634\u062D\u0646\u0629"),
+                            actualOwner && (d.username ? React.createElement(ResetPassword, { id: d.id, role: "driver", act: act }) : React.createElement(LinkAccount, { id: d.id, role: "driver", act: act }))))) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u0645\u0646\u0627\u062F\u064A\u0628 \u0644\u0633\u0647", detail: "\u0623\u0636\u0641 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0627\u0644\u0623\u0648\u0644 \u0639\u0634\u0627\u0646 \u062A\u0648\u0632\u0651\u0639 \u0639\u0644\u064A\u0647 \u0627\u0644\u0634\u062D\u0646\u0627\u062A." }))),
+            owner && tab === 'import' && React.createElement("div", { className: "grid" },
+                React.createElement("div", { className: "card" },
+                    React.createElement("div", { className: "cardhead" },
+                        React.createElement("div", null,
+                            React.createElement("h3", null, "\u0631\u0641\u0639 \u0634\u062D\u0646\u0627\u062A \u062C\u062F\u064A\u062F\u0629"),
+                            React.createElement("p", null, "\u0627\u062E\u062A\u0627\u0631 \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0631\u0627\u062C\u0639 \u0627\u0644\u0623\u0639\u0645\u062F\u0629 \u0642\u0628\u0644 \u0627\u0644\u062D\u0641\u0638")),
+                        React.createElement("button", { className: "subtle", onClick: sample }, "\u2193 \u062A\u0646\u0632\u064A\u0644 \u0646\u0645\u0648\u0630\u062C Excel")),
+                    React.createElement("label", null,
+                        "\u0627\u0644\u0634\u0631\u0643\u0629 \u0635\u0627\u062D\u0628\u0629 \u0627\u0644\u0634\u062D\u0646\u0627\u062A",
+                        React.createElement("select", { value: company, onChange: e => setCompany(e.target.value) },
+                            React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u0634\u0631\u0643\u0629"),
+                            companies.map(c => React.createElement("option", { key: c.id, value: c.id }, c.name)))),
+                    React.createElement("label", { className: "upload" },
+                        React.createElement("b", null, "\u21E7"),
+                        React.createElement("strong", null, "\u0627\u062E\u062A\u0627\u0631 \u0645\u0644\u0641 Excel \u0623\u0648 CSV"),
+                        React.createElement("span", null, "\u0623\u0648\u0644 \u0635\u0641 \u0641\u064A \u0627\u0644\u0645\u0644\u0641 \u0644\u0627\u0632\u0645 \u064A\u062D\u062A\u0648\u064A \u0639\u0644\u0649 \u0623\u0633\u0645\u0627\u0621 \u0627\u0644\u0623\u0639\u0645\u062F\u0629"),
+                        React.createElement("input", { type: "file", accept: ".xlsx,.xls,.csv", onChange: upload })),
+                    file.length > 0 && React.createElement(React.Fragment, null,
+                        React.createElement("div", { className: "sectiontitle" },
+                            "\u0645\u0637\u0627\u0628\u0642\u0629 \u0627\u0644\u0623\u0639\u0645\u062F\u0629 ",
+                            React.createElement("span", null,
+                                file.length,
+                                " \u0635\u0641")),
+                        React.createElement("div", { className: "mapping" }, fields.map(([key, label]) => React.createElement("label", { key: key },
+                            label,
+                            React.createElement("select", { value: map[key] || '', onChange: e => setMap({ ...map, [key]: e.target.value }) },
+                                React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u0639\u0645\u0648\u062F"),
+                                headers.map(h => React.createElement("option", { key: h, value: h }, h)))))),
+                        React.createElement("button", { disabled: busy || !company || fields.some(([k]) => !map[k]), onClick: () => { let rows = file.map(r => Object.fromEntries(fields.map(([k]) => [k, k === 'total' ? cents(r[map[k]]) : String(r[map[k]] ?? '')]))); act({ op: 'import', companyId: company, rows }, () => { setFile([]); setHeaders([]); setMap({}); }); } },
+                            "\u062A\u0623\u0643\u064A\u062F \u0648\u0627\u0633\u062A\u064A\u0631\u0627\u062F ",
+                            file.length,
+                            " \u0634\u062D\u0646\u0629"))),
+                React.createElement("div", { className: "card" },
+                    React.createElement("div", { className: "cardhead" },
+                        React.createElement("div", null,
+                            React.createElement("h3", null, "\u0645\u0639\u0627\u064A\u0646\u0629 \u0627\u0644\u0645\u0644\u0641"),
+                            React.createElement("p", null, "\u0631\u0627\u062C\u0639 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u0642\u0628\u0644 \u0625\u0636\u0627\u0641\u062A\u0647\u0627 \u0644\u0644\u0646\u0638\u0627\u0645"))),
+                    file.length ? React.createElement("div", { className: "tablewrap" },
+                        React.createElement("table", null,
+                            React.createElement("thead", null,
+                                React.createElement("tr", null, headers.map(h => React.createElement("th", { key: h }, h)))),
+                            React.createElement("tbody", null, file.slice(0, 8).map((r, i) => React.createElement("tr", { key: i }, headers.map(h => React.createElement("td", { key: h }, String(r[h]))))))),
+                        React.createElement("small", null,
+                            "\u0639\u0631\u0636 \u0623\u0648\u0644 \u0668 \u0635\u0641\u0648\u0641 \u0641\u0642\u0637 \u0645\u0646 \u0625\u062C\u0645\u0627\u0644\u064A ",
+                            file.length)) : React.createElement(Empty, { text: "\u0645\u0644\u0641\u0643 \u0647\u064A\u0638\u0647\u0631 \u0647\u0646\u0627", detail: "\u0627\u0631\u0641\u0639 \u0645\u0644\u0641 \u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0645\u062D\u062A\u0648\u0627\u0647 \u0648\u0631\u0628\u0637 \u0627\u0644\u0623\u0639\u0645\u062F\u0629." }),
+                    React.createElement("div", { className: "hint" }, "\u0642\u064A\u0645\u0629 \u0627\u0644\u0623\u0648\u0631\u062F\u0631 \u0641\u064A \u0627\u0644\u0634\u064A\u062A \u0634\u0627\u0645\u0644\u0629 \u0627\u0644\u062A\u0648\u0635\u064A\u0644. \u0633\u0639\u0631 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0648\u0646\u0635\u064A\u0628 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0628\u064A\u062A\u0633\u062C\u0644\u0648\u0627 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0642\u062A \u0627\u0644\u0627\u0633\u062A\u064A\u0631\u0627\u062F."))),
+            owner && tab === 'reports' && React.createElement(CompanyReports, { companies: companies, shipments: ss, events: data.shipmentEvents || [], day: day, setDay: setDay }),
+            actualOwner && tab === 'users' && React.createElement(UsersPanel, { users: staffUsers, drivers: drivers, driverPermissions: data.driverPermissions || [], busy: busy, act: act }),
+            actualOwner && tab === 'accounts' && React.createElement("div", { className: "hint top-hint" },
+                React.createElement("b", null, "\u062A\u0635\u062F\u064A\u0631 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0629:"),
+                " \u0646\u0632\u0651\u0644 \u0645\u0644\u0641 Excel \u064A\u062D\u062A\u0648\u064A \u0639\u0644\u0649 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0648\u0627\u0644\u062E\u0632\u0646\u0629 \u0648\u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645\u064A\u0646 \u0644\u0644\u0627\u062D\u062A\u0641\u0627\u0638 \u0628\u0646\u0633\u062E\u0629 \u0648\u0645\u0631\u0627\u062C\u0639\u062A\u0647\u0627. \u0627\u0644\u0627\u0633\u062A\u0639\u0627\u062F\u0629 \u0627\u0644\u062A\u0644\u0642\u0627\u0626\u064A\u0629 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629 \u062D\u0627\u0644\u064A\u064B\u0627. ",
+                React.createElement("button", { className: "subtle", onClick: exportData }, "\u2193 \u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A")),
+            owner && tab === 'accounts' && React.createElement(AccountsPanel, { entries: cashEntries, payments: payments, shipments: ss, day: day, setDay: setDay, act: act, busy: busy, canEdit: allowed('accounts', 'edit') }),
+            owner && tab === 'settlements' && React.createElement(React.Fragment, null,
+                React.createElement(DateSelect, { day: day, setDay: setDay }),
+                React.createElement(CompanyDaily, { shipments: ss, payments: payments, day: day }),
+                React.createElement("div", { className: "hint top-hint" }, "\u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u0631\u062D\u0651\u0644 \u064A\u0634\u0645\u0644 \u0645\u0627 \u0642\u0628\u0644 \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631. \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u0644\u0651\u0645\u0629 \u062A\u062A\u062D\u0633\u0628 \u0641\u064A \u064A\u0648\u0645 \u0627\u0644\u062A\u0633\u0644\u064A\u0645\u060C \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0641\u064A \u064A\u0648\u0645 \u062A\u0633\u062C\u064A\u0644\u0647\u0627. \u0643\u0644 \u0627\u0644\u062A\u0648\u0627\u0631\u064A\u062E \u0628\u062A\u0648\u0642\u064A\u062A \u0627\u0644\u0642\u0627\u0647\u0631\u0629. \u0645\u0628\u0627\u0644\u063A \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0645\u062D\u0633\u0648\u0628\u0629 \u0628\u0639\u062F \u062E\u0635\u0645 \u0646\u0635\u064A\u0628\u0647\u060C \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0629 \u0644\u0627 \u062A\u064F\u0633\u062C\u0651\u0644 \u0625\u0644\u0627 \u0628\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u064A\u0648\u0645."),
+                React.createElement(DailyClose, { drivers: drivers, shipments: ss, payments: payments, closures: data.closures || [], day: day, act: act, busy: busy, canEdit: allowed('settlements', 'edit'), canReopen: actualOwner }),
+                React.createElement("div", { className: "grid" },
+                    React.createElement(Settlement, { title: "\u0639\u0647\u062F\u0629 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628", type: "driver", parties: drivers, shipments: ss, payments: payments, closures: data.closures || [], day: day, act: act, busy: busy, canEdit: allowed('settlements', 'edit') }),
+                    React.createElement(Settlement, { title: "\u0645\u0633\u062A\u062D\u0642\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0627\u062A", type: "company", parties: companies, shipments: ss, payments: payments, day: day, act: act, busy: busy, canEdit: allowed('settlements', 'edit') })),
+                React.createElement("div", { className: "card space" },
+                    React.createElement("h3", null, "\u062A\u0633\u0648\u064A\u0627\u062A \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631"),
+                    payments.filter(p => businessDate(p.created) === day).length ? React.createElement("div", { className: "tablewrap" },
+                        React.createElement("table", null,
+                            React.createElement("thead", null,
+                                React.createElement("tr", null,
+                                    React.createElement("th", null, "\u0627\u0644\u0646\u0648\u0639"),
+                                    React.createElement("th", null, "\u0627\u0644\u062D\u0633\u0627\u0628"),
+                                    React.createElement("th", null, "\u0627\u0644\u0645\u0628\u0644\u063A"),
+                                    React.createElement("th", null, "\u0627\u0644\u0628\u064A\u0627\u0646"),
+                                    React.createElement("th", null, "\u0627\u0644\u062A\u0648\u0642\u064A\u062A"))),
+                            React.createElement("tbody", null, payments.filter(p => businessDate(p.created) === day).map(p => React.createElement("tr", { key: p.id },
+                                React.createElement("td", null, p.type === 'driver' ? 'استلام من مندوب' : 'دفع لشركة'),
+                                React.createElement("td", null, p.type === 'driver' ? driverName(p.party_id) : companyName(p.party_id)),
+                                React.createElement("td", null, fmt(p.amount)),
+                                React.createElement("td", null, p.note || '—'),
+                                React.createElement("td", null, new Date(p.created).toLocaleTimeString('ar-EG', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit' }))))))) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u062A\u0633\u0648\u064A\u0627\u062A \u0641\u064A \u0627\u0644\u064A\u0648\u0645 \u062F\u0647", detail: "\u0639\u0645\u0644\u064A\u0627\u062A \u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645 \u0648\u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u0645\u0633\u062C\u0644\u0629 \u0641\u064A \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0647\u062A\u0638\u0647\u0631 \u0647\u0646\u0627." })))));
 }
-function dashboard(){
-var sh=data('shipments'),finals=sh.filter(function(x){return ['delivered','partial','returned_visit'].includes(x.status)}),expectedCompanies=sum(sh,companyDue),received=sum(data('payments').filter(function(x){return x.type==='driver'}),function(x){return x.amount}),paidTo=sum(data('payments').filter(function(x){return x.type==='company'}),function(x){return x.amount});
-var counts=Object.keys(statuses).map(function(s){return [s,sh.filter(function(x){return x.status===s}).length]});
-var recent=data('shipmentEvents').slice(0,10).map(function(e){var s=byId('shipments',e.shipment_id);return ['#'+esc(s&&s.tracking||e.shipment_id),pill(e.status),esc(byId('drivers',e.driver_id)?.name||'—'),esc(dt(e.created))]});
-var today=day(new Date()),todays=sh.filter(function(s){return s.delivered&&day(s.delivered)===today});
-return '<div class="stats">'+stat('إجمالي الشحنات',sh.length)+stat('تم التسليم',sh.filter(function(x){return x.status==='delivered'}).length)+stat('تحصيل المناديب',money(received))+stat('المتبقي للشركات',money(expectedCompanies-paidTo))+'</div>'+
-'<div class="stats">'+stat('شحنات بدون مندوب',sh.filter(function(x){return !x.driver_id&&['new','transit','postponed'].includes(x.status)}).length)+stat('أُنجزت اليوم',todays.length)+stat('إجمالي رسوم التوصيل للشحنات المنجزة',money(sum(finals,function(s){return s.delivery})))+stat('صافي رسوم الشحن قبل المصاريف',money(sum(finals,function(s){return s.delivery-s.driver_fee})))+'</div>'+
-'<div class="panel"><h2>سير عمل مسار</h2><div class="flowsteps"><span>١. إضافة شركة</span><span>٢. استيراد الشحنات</span><span>٣. توزيع المندوبين</span><span>٤. متابعة التسليم</span><span>٥. إقفال الحساب اليومي</span><span>٦. تقرير الشركة</span></div><div class="actions">'+button('استيراد Excel','import',0,'primary')+button('توزيع الشحنات','navigate-distribution',0,'soft')+button('الحساب اليومي','navigate-daily')+button('تقرير شركة','navigate-reports')+'</div></div>'+
-'<div class="grid2">'+panel('حالات الشحنات',table(['الحالة','العدد'],counts.map(function(x){return [pill(x[0]),String(x[1])]})))+panel('آخر تحركات الشحنات',table(['الشحنة','التحديث','المندوب','التوقيت'],recent))+'</div>'
+function Empty({ text, detail }) { return React.createElement("div", { className: "empty" },
+    React.createElement("div", null, "\u25A3"),
+    React.createElement("b", null, text),
+    React.createElement("p", null, detail)); }
+function ShipmentTable({ rows, owner, readOnly, allowCorrection, companyName, driverName, selected, toggle, act }) { return React.createElement("div", { className: "tablewrap" },
+    React.createElement("table", null,
+        React.createElement("thead", null,
+            React.createElement("tr", null,
+                owner && React.createElement("th", null, "\u0627\u062E\u062A\u064A\u0627\u0631"),
+                React.createElement("th", null, "\u0627\u0644\u0634\u062D\u0646\u0629 / \u0627\u0644\u0639\u0645\u064A\u0644"),
+                React.createElement("th", null, "\u0627\u0644\u0647\u0627\u062A\u0641 \u0648\u0627\u0644\u0639\u0646\u0648\u0627\u0646"),
+                owner && React.createElement("th", null, "\u0627\u0644\u0634\u0631\u0643\u0629 / \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+                React.createElement("th", null, "\u0627\u0644\u062A\u062D\u0635\u064A\u0644"),
+                React.createElement("th", null, "\u0627\u0644\u062D\u0627\u0644\u0629"),
+                React.createElement("th", null, "\u062A\u062D\u062F\u064A\u062B"))),
+        React.createElement("tbody", null, rows.map((s) => React.createElement("tr", { key: s.id },
+            owner && React.createElement("td", null,
+                React.createElement("input", { type: "checkbox", checked: selected.includes(s.id), disabled: isFinal(s), onChange: () => toggle(s.id) })),
+            React.createElement("td", null,
+                React.createElement("b", null,
+                    "#",
+                    s.tracking),
+                React.createElement("small", null,
+                    s.customer,
+                    " \u00B7 ",
+                    s.product)),
+            React.createElement("td", null,
+                React.createElement("a", { href: 'tel:' + s.phone }, s.phone),
+                React.createElement("small", null, s.address)),
+            owner && React.createElement("td", null,
+                companyName(s.company_id),
+                React.createElement("small", null, driverName(s.driver_id))),
+            React.createElement("td", null,
+                React.createElement("b", null, fmt(s.total))),
+            React.createElement("td", null,
+                React.createElement("span", { className: 'badge ' + s.status }, labels[s.status]),
+                s.notes && React.createElement("small", null, s.notes)),
+            React.createElement("td", null, readOnly ? React.createElement("small", null, "\u0639\u0631\u0636 \u0641\u0642\u0637") : isFinal(s) ? (allowCorrection ? React.createElement(CorrectShipment, { s: s, act: act }) : React.createElement("small", null, "\u0645\u0642\u0641\u0648\u0644\u0629")) : React.createElement(Status, { s: s, act: act }))))))); }
+function Status({ s, act }) { const [value, setValue] = useState(s.status === 'new' ? 'transit' : s.status), [notes, setNotes] = useState(s.notes || ''), [amount, setAmount] = useState(''); return React.createElement("div", { className: "statusform" },
+    React.createElement("select", { value: value, onChange: e => setValue(e.target.value) },
+        React.createElement("option", { value: "transit" }, "\u0645\u0639 \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+        React.createElement("option", { value: "delivered" }, "\u062A\u0645 \u0627\u0644\u062A\u0633\u0644\u064A\u0645 \u0628\u0627\u0644\u0643\u0627\u0645\u0644"),
+        !!s.partial_allowed && React.createElement("option", { value: "partial" }, "\u0627\u0633\u062A\u0644\u0627\u0645 \u062C\u0632\u0626\u064A"),
+        React.createElement("option", { value: "postponed" }, "\u0645\u0624\u062C\u0644\u0629"),
+        React.createElement("option", { value: "returned" }, "\u0631\u0641\u0636 \u0628\u0627\u0644\u062A\u0644\u064A\u0641\u0648\u0646 \u0628\u062F\u0648\u0646 \u062A\u062D\u0635\u064A\u0644"),
+        React.createElement("option", { value: "returned_visit" }, "\u0631\u0641\u0636 \u0628\u0639\u062F \u0627\u0644\u0632\u064A\u0627\u0631\u0629 - \u062A\u062D\u0635\u064A\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644")),
+    value === 'partial' && React.createElement("input", { type: "number", min: "0", step: "0.01", placeholder: "\u0627\u0644\u0645\u062D\u0635\u0651\u0644 \u0634\u0627\u0645\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644", value: amount, onChange: e => setAmount(e.target.value) }),
+    React.createElement("input", { placeholder: "\u0645\u0644\u0627\u062D\u0638\u0629", value: notes, onChange: e => setNotes(e.target.value) }),
+    React.createElement("button", { className: "subtle", onClick: () => { const final = ['delivered', 'partial', 'returned_visit'].includes(value); if (value === 'partial' && !amount) {
+            alert('أدخل المبلغ المحصّل شامل التوصيل');
+            return;
+        } if (final && !confirm(value === 'returned_visit' ? 'تأكيد تحصيل التوصيل فقط؟ ستُقفل الشحنة.' : value === 'partial' ? 'تأكيد المبلغ المحصّل شامل التوصيل؟ ستُقفل الشحنة.' : 'تأكيد تسليم الشحنة وتحصيل قيمتها كاملة؟ ستُقفل الشحنة.'))
+            return; act({ op: 'status', id: s.id, status: value, notes, collected: value === 'partial' ? cents(amount) : undefined }); } }, "\u062D\u0641\u0638")); }
+function CompanyForm({ item, save, cancel, busy }) { return React.createElement("form", { onSubmit: e => { e.preventDefault(); let f = new FormData(e.currentTarget); save({ id: item?.id, name: f.get('name'), phone: f.get('phone'), delivery: cents(f.get('delivery')), fee: cents(f.get('fee')), allowPartial: f.get('allowPartial') === 'on' }); } },
+    React.createElement("label", null,
+        "\u0627\u0633\u0645 \u0627\u0644\u0634\u0631\u0643\u0629",
+        React.createElement("input", { name: "name", required: true, defaultValue: item?.name })),
+    React.createElement("label", null,
+        "\u0631\u0642\u0645 \u0627\u0644\u062A\u0648\u0627\u0635\u0644",
+        React.createElement("input", { name: "phone", defaultValue: item?.phone })),
+    React.createElement("div", { className: "mapping" },
+        React.createElement("label", null,
+            "\u0633\u0639\u0631 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 (\u062C.\u0645)",
+            React.createElement("input", { name: "delivery", type: "number", min: "0", step: "0.01", required: true, defaultValue: item ? item.delivery / 100 : '' })),
+        React.createElement("label", null,
+            "\u0646\u0635\u064A\u0628 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 (\u062C.\u0645)",
+            React.createElement("input", { name: "fee", type: "number", min: "0", step: "0.01", required: true, defaultValue: item ? item.driver_fee / 100 : '' }))),
+    React.createElement("label", { className: "checkline" },
+        React.createElement("input", { type: "checkbox", name: "allowPartial", defaultChecked: !!item?.allow_partial }),
+        " \u0627\u0644\u0634\u0631\u0643\u0629 \u062A\u0633\u0645\u062D \u0628\u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645 \u0627\u0644\u062C\u0632\u0626\u064A"),
+    React.createElement("div", { className: "formactions" },
+        React.createElement("button", { disabled: busy }, "\u062D\u0641\u0638 \u0627\u0644\u0634\u0631\u0643\u0629"),
+        item && React.createElement("button", { type: "button", className: "subtle", onClick: cancel }, "\u0625\u0644\u063A\u0627\u0621")),
+    React.createElement("p", { className: "muted" }, "\u062A\u063A\u064A\u064A\u0631 \u0627\u0644\u0623\u0633\u0639\u0627\u0631 \u0648\u0625\u0630\u0646 \u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645 \u0627\u0644\u062C\u0632\u0626\u064A \u064A\u0637\u0628\u0642 \u0639\u0644\u0649 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u062A\u0648\u0631\u062F\u0629 \u0628\u0639\u062F \u0627\u0644\u062A\u0639\u062F\u064A\u0644 \u0641\u0642\u0637.")); }
+function DriverForm({ save, busy }) { return React.createElement("form", { onSubmit: e => { e.preventDefault(); let f = new FormData(e.currentTarget); save({ name: f.get('name'), username: f.get('username'), password: f.get('password'), phone: f.get('phone') }); } },
+    React.createElement("label", null,
+        "\u0627\u0633\u0645 \u0627\u0644\u0645\u0646\u062F\u0648\u0628",
+        React.createElement("input", { name: "name", required: true })),
+    React.createElement("label", null,
+        "\u0631\u0642\u0645 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645",
+        React.createElement("input", { name: "username", required: true, inputMode: "numeric", pattern: "[0-9]{4,12}", dir: "ltr" })),
+    React.createElement("label", null,
+        "\u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631 \u0645\u0624\u0642\u062A\u0629 (\u0668 \u0623\u062D\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644)",
+        React.createElement("input", { name: "password", type: "password", minLength: 8, required: true, dir: "ltr", autoComplete: "new-password" })),
+    React.createElement("label", null,
+        "\u0631\u0642\u0645 \u0627\u0644\u062A\u0644\u064A\u0641\u0648\u0646",
+        React.createElement("input", { name: "phone" })),
+    React.createElement("button", { disabled: busy }, "\u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0645\u0646\u062F\u0648\u0628")); }
+function DateSelect({ day, setDay }) { return React.createElement("div", { className: "datebar" },
+    React.createElement("div", null,
+        React.createElement("b", null, "\u0627\u0644\u062D\u0633\u0627\u0628 \u0627\u0644\u064A\u0648\u0645\u064A"),
+        React.createElement("small", null, "\u0627\u062E\u062A\u0627\u0631 \u0623\u064A \u064A\u0648\u0645 \u0644\u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u00B7 \u0628\u062A\u0648\u0642\u064A\u062A \u0627\u0644\u0642\u0627\u0647\u0631\u0629")),
+    React.createElement("label", null,
+        "\u0627\u0644\u062A\u0627\u0631\u064A\u062E",
+        React.createElement("input", { "aria-label": "\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u062D\u0633\u0627\u0628", type: "date", value: day, onChange: e => setDay(e.target.value || businessDate(new Date())) })),
+    React.createElement("button", { className: "subtle", onClick: () => setDay(businessDate(new Date())) }, "\u0627\u0644\u064A\u0648\u0645")); }
+function CompanyDaily({ shipments, payments, day }) { let v = companyDay(shipments, payments, day); return React.createElement(React.Fragment, null,
+    React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "cardhead" },
+            React.createElement("div", null,
+                React.createElement("h3", null, "\u062D\u0633\u0627\u0628 \u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646"),
+                React.createElement("p", null, "\u0646\u0634\u0627\u0637 \u0627\u0644\u064A\u0648\u0645 \u0645\u0646 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0642\u0641\u0648\u0644\u0629")),
+            React.createElement("span", { className: "tag" },
+                v.count,
+                " \u0634\u062D\u0646\u0629 \u0645\u0633\u0644\u0651\u0645\u0629")),
+        React.createElement("div", { className: "moneygrid" },
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u062A\u062D\u0635\u064A\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u0644\u0627\u0621"),
+                React.createElement("b", null, fmt(v.collected))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0625\u062C\u0645\u0627\u0644\u064A \u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u062A\u0648\u0635\u064A\u0644"),
+                React.createElement("b", null, fmt(v.shipping))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0646\u0635\u064A\u0628 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628"),
+                React.createElement("b", null, fmt(v.commissions))),
+            React.createElement("div", { className: "highlight" },
+                React.createElement("small", null, "\u062F\u062E\u0644 \u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0646 \u0627\u0644\u062A\u0648\u0635\u064A\u0644"),
+                React.createElement("b", null, fmt(v.earned)))),
+        React.createElement("p", { className: "muted" }, "\u062F\u062E\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 = \u0633\u0639\u0631 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u2212 \u0646\u0635\u064A\u0628 \u0627\u0644\u0645\u0646\u062F\u0648\u0628. \u062F\u0647 \u062F\u062E\u0644 \u0645\u0633\u062A\u062D\u0642 \u0645\u0646 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u0644\u0651\u0645\u0629\u060C \u0648\u0645\u0634 \u0635\u0627\u0641\u064A \u0627\u0644\u0631\u0628\u062D \u0628\u0639\u062F \u0645\u0635\u0627\u0631\u064A\u0641 \u0627\u0644\u0634\u0631\u0643\u0629."),
+        React.createElement("div", { className: "moneygrid cashgrid" },
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u0633\u062A\u0644\u0645 \u0645\u0646 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0641\u0639\u0644\u064A\u064B\u0627"),
+                React.createElement("b", null, fmt(v.fromDrivers))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u062F\u0641\u0648\u0639 \u0644\u0644\u0634\u0631\u0643\u0627\u062A \u0641\u0639\u0644\u064A\u064B\u0627"),
+                React.createElement("b", null, fmt(v.toCompanies))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0641\u0631\u0642 \u062D\u0631\u0643\u0629 \u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0641\u064A \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("b", null, fmt(v.netCash)))),
+        React.createElement("p", { className: "muted" }, "\u0641\u0631\u0642 \u0627\u0644\u062D\u0631\u0643\u0629 = \u0627\u0644\u0645\u0633\u062A\u0644\u0645 \u0645\u0646 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u2212 \u0627\u0644\u0645\u062F\u0641\u0648\u0639 \u0644\u0644\u0634\u0631\u0643\u0627\u062A \u062E\u0644\u0627\u0644 \u0627\u0644\u064A\u0648\u0645\u060C \u0648\u0645\u0634 \u0631\u0635\u064A\u062F \u0627\u0644\u062E\u0632\u0646\u0629 \u0627\u0644\u0643\u0627\u0645\u0644.")),
+    React.createElement("div", { style: { height: 18 } })); }
+function DriverAccount({ driver, shipments, payments, day, setDay, goShipments }) { if (!driver)
+    return null; let v = dayAccount(shipments, payments, 'driver', driver.id, day); return React.createElement(React.Fragment, null,
+    React.createElement(DateSelect, { day: day, setDay: setDay }),
+    React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "cardhead" },
+            React.createElement("div", null,
+                React.createElement("h3", null,
+                    "\u0623\u0647\u0644\u064B\u0627 \u064A\u0627 ",
+                    driver.name),
+                React.createElement("p", null, "\u062D\u0633\u0627\u0628\u0643 \u0639\u0644\u0649 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u0644\u0651\u0645\u0629 \u0641\u064A \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631")),
+            goShipments && React.createElement("button", { onClick: goShipments }, "\u0639\u0631\u0636 \u0634\u062D\u0646\u0627\u062A\u064A \u2190")),
+        React.createElement("div", { className: "moneygrid" },
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u062D\u0635\u0651\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u0644\u0627\u0621 \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("b", null, fmt(v.received))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0646\u0635\u064A\u0628\u0643 \u0645\u0646 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("b", null, fmt(v.fees))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u0637\u0644\u0648\u0628 \u0639\u0646 \u062A\u0633\u0644\u064A\u0645\u0627\u062A \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("b", null, fmt(v.accrued))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u0628\u0644\u063A \u0627\u0644\u0645\u0633\u0644\u0651\u0645 \u0644\u0644\u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("b", null, fmt(v.settled)))),
+        React.createElement("div", { className: "balance space" },
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0631\u0635\u064A\u062F \u0645\u0631\u062D\u0651\u0644 \u0645\u0646 \u0627\u0644\u0623\u064A\u0627\u0645 \u0627\u0644\u0633\u0627\u0628\u0642\u0629"),
+                React.createElement("b", null, fmt(v.opening))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0635\u0627\u0641\u064A \u0627\u0644\u0645\u0637\u0644\u0648\u0628 \u0639\u0646 \u062A\u0633\u0644\u064A\u0645\u0627\u062A \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("b", null, fmt(v.accrued))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u062A\u0628\u0642\u064A \u0639\u0644\u064A\u0643 \u0628\u0646\u0647\u0627\u064A\u0629 \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("b", null, fmt(v.closing)))),
+        React.createElement("p", { className: "muted" }, "\u0646\u0635\u064A\u0628\u0643 \u0628\u064A\u064F\u062E\u0635\u0645 \u0645\u0646 \u0627\u0644\u062A\u062D\u0635\u064A\u0644 \u0645\u0628\u0627\u0634\u0631\u0629. \u0627\u0644\u0645\u062A\u0628\u0642\u064A \u0639\u0644\u064A\u0643 = \u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u0631\u062D\u0651\u0644 + \u0627\u0644\u0645\u0637\u0644\u0648\u0628 \u0639\u0646 \u062A\u0633\u0644\u064A\u0645\u0627\u062A \u0627\u0644\u064A\u0648\u0645 \u2212 \u0627\u0644\u0645\u0628\u0644\u063A \u0627\u0644\u0645\u0633\u0644\u0651\u0645 \u0644\u0644\u0625\u062F\u0627\u0631\u0629. \u0627\u0644\u062A\u0648\u0627\u0631\u064A\u062E \u0628\u062A\u0648\u0642\u064A\u062A \u0627\u0644\u0642\u0627\u0647\u0631\u0629.")),
+    React.createElement("div", { className: "card space" },
+        React.createElement("h3", null, "\u062D\u0631\u0643\u0629 \u0627\u0644\u062A\u0633\u0644\u064A\u0645\u0627\u062A \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A"),
+        v.items.length === 0 && v.payments.length === 0 ? React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u062D\u0631\u0643\u0629 \u0641\u064A \u0627\u0644\u064A\u0648\u0645 \u062F\u0647", detail: "\u062A\u0633\u0644\u064A\u0645\u0627\u062A\u0643 \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0647\u062A\u0638\u0647\u0631 \u0647\u0646\u0627." }) : React.createElement("div", { className: "tablewrap" },
+            React.createElement("table", null,
+                React.createElement("thead", null,
+                    React.createElement("tr", null,
+                        React.createElement("th", null, "\u0627\u0644\u0639\u0645\u0644\u064A\u0629"),
+                        React.createElement("th", null, "\u0627\u0644\u0628\u064A\u0627\u0646"),
+                        React.createElement("th", null, "\u0627\u0644\u0645\u0628\u0644\u063A"))),
+                React.createElement("tbody", null,
+                    v.items.map((s) => React.createElement("tr", { key: 's' + s.id },
+                        React.createElement("td", null,
+                            labels[s.status],
+                            " #",
+                            s.tracking),
+                        React.createElement("td", null,
+                            s.customer,
+                            " \u00B7 \u0646\u0635\u064A\u0628\u0643 ",
+                            fmt(s.driver_fee)),
+                        React.createElement("td", null,
+                            fmt(driverDue(s)),
+                            " \u0639\u0644\u064A\u0643"))),
+                    v.payments.map((p) => React.createElement("tr", { key: 'p' + p.id },
+                        React.createElement("td", null, "\u062A\u0633\u0644\u064A\u0645 \u0644\u0644\u0625\u062F\u0627\u0631\u0629"),
+                        React.createElement("td", null, p.note || '—'),
+                        React.createElement("td", null, fmt(p.amount))))))))); }
+function DriverShipments({ rows, act, access = { account: true, status: true } }) { return React.createElement("div", { className: "drivercards" }, rows.map((s) => React.createElement("div", { className: "drivercard", key: s.id },
+    React.createElement("div", { className: "cardhead" },
+        React.createElement("b", null,
+            "#",
+            s.tracking),
+        React.createElement("span", { className: 'badge ' + s.status }, labels[s.status])),
+    React.createElement("h3", null, s.customer),
+    React.createElement("p", null, s.address),
+    React.createElement("p", null,
+        s.product,
+        " \u00B7 \u0627\u0644\u0645\u0637\u0644\u0648\u0628 \u062A\u062D\u0635\u064A\u0644\u0647: ",
+        React.createElement("b", null, fmt(s.total))),
+    access.account && React.createElement("p", null,
+        "\u0646\u0635\u064A\u0628\u0643 \u0639\u0646\u062F \u0627\u0644\u062A\u0633\u0644\u064A\u0645: ",
+        React.createElement("b", null, fmt(s.driver_fee))),
+    React.createElement("a", { className: "call", href: 'tel:' + s.phone },
+        "\u0627\u062A\u0635\u0644 \u0628\u0627\u0644\u0639\u0645\u064A\u0644 \u00B7 ",
+        s.phone),
+    s.notes && React.createElement("p", null,
+        "\u0645\u0644\u0627\u062D\u0638\u0629: ",
+        s.notes),
+    isFinal(s) ? React.createElement("div", { className: "hint" }, "\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062D\u0627\u0644\u0629 \u0648\u0642\u0641\u0644 \u0627\u0644\u0634\u062D\u0646\u0629 \u0644\u0644\u062D\u0633\u0627\u0628\u0627\u062A.") : access.status ? React.createElement(Status, { s: s, act: act }) : React.createElement("p", null, "\u0639\u0631\u0636 \u0641\u0642\u0637")))); }
+function Settlement({ title, type, parties, shipments, payments, closures = [], day, act, busy, canEdit }) { const [party, setParty] = useState(''), [amount, setAmount] = useState(''), [note, setNote] = useState(''); let v = party ? dayAccount(shipments, payments, type, Number(party), day) : { opening: 0, accrued: 0, settled: 0, closing: 0 }; let today = day === businessDate(new Date()), closed = type === 'driver' && closures.some((x) => x.driver_id === Number(party) && x.day === day && !x.reopened_at); return React.createElement("div", { className: "card" },
+    React.createElement("h3", null, title),
+    React.createElement("label", null,
+        "\u0627\u0644\u062D\u0633\u0627\u0628",
+        React.createElement("select", { value: party, onChange: e => setParty(e.target.value) },
+            React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u062D\u0633\u0627\u0628"),
+            parties.map((p) => React.createElement("option", { key: p.id, value: p.id }, p.name)))),
+    React.createElement("div", { className: "moneygrid" },
+        React.createElement("div", null,
+            React.createElement("small", null, "\u0631\u0635\u064A\u062F \u0645\u0631\u062D\u0651\u0644"),
+            React.createElement("b", null, fmt(v.opening))),
+        React.createElement("div", null,
+            React.createElement("small", null, "\u0645\u0633\u062A\u062D\u0642 \u0627\u0644\u064A\u0648\u0645"),
+            React.createElement("b", null, fmt(v.accrued))),
+        React.createElement("div", null,
+            React.createElement("small", null, "\u062A\u0633\u0648\u064A\u0627\u062A \u0627\u0644\u064A\u0648\u0645"),
+            React.createElement("b", null, fmt(v.settled))),
+        React.createElement("div", null,
+            React.createElement("small", null, "\u0627\u0644\u0645\u062A\u0628\u0642\u064A \u0646\u0647\u0627\u064A\u0629 \u0627\u0644\u064A\u0648\u0645"),
+            React.createElement("b", null, fmt(v.closing)))),
+    React.createElement("label", null,
+        "\u0627\u0644\u0645\u0628\u0644\u063A (\u062C.\u0645)",
+        React.createElement("input", { type: "number", min: "0.01", step: "0.01", value: amount, onChange: e => setAmount(e.target.value) })),
+    React.createElement("label", null,
+        "\u0645\u0644\u0627\u062D\u0638\u0629",
+        React.createElement("input", { value: note, onChange: e => setNote(e.target.value) })),
+    React.createElement("button", { disabled: !party || !amount || busy || !today || !canEdit || closed, onClick: () => act({ op: 'payment', type, partyId: party, amount: cents(amount), note }, () => { setAmount(''); setNote(''); }) }, type === 'driver' ? 'تسجيل استلام من المندوب' : 'تسجيل دفع للشركة'),
+    closed && React.createElement("p", { className: "muted" }, "\u064A\u0648\u0645 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0645\u0642\u0641\u0648\u0644\u061B \u0635\u0627\u062D\u0628 \u0627\u0644\u0634\u0631\u0643\u0629 \u064A\u0642\u062F\u0631 \u064A\u0639\u064A\u062F \u0641\u062A\u062D\u0647 \u0628\u0633\u0628\u0628 \u0645\u0633\u062C\u0644."),
+    !today && React.createElement("p", { className: "muted" }, "\u0644\u0644\u062A\u0633\u062C\u064A\u0644 \u0627\u062E\u062A\u0627\u0631 \u062A\u0627\u0631\u064A\u062E \u0627\u0644\u064A\u0648\u0645\u061B \u0644\u0627 \u064A\u0645\u0643\u0646 \u062A\u0633\u062C\u064A\u0644 \u062A\u0633\u0648\u064A\u0629 \u0628\u0623\u062B\u0631 \u0631\u062C\u0639\u064A.")); }
+const accessAreas = [['shipments', 'الشحنات وتوزيعها واستيرادها'], ['companies', 'الشركات وأسعار التوصيل'], ['drivers', 'المناديب وبياناتهم'], ['settlements', 'التسويات والحسابات اليومية'], ['accounts', 'الخزنة وحسابات الشركة']];
+function UsersPanel({ users, drivers, driverPermissions, busy, act }) { const [editing, setEditing] = useState(null), [name, setName] = useState(''), [email, setEmail] = useState(''), [password, setPassword] = useState(''), [active, setActive] = useState(true), [permissions, setPermissions] = useState({}); const reset = () => { setEditing(null); setName(''); setEmail(''); setPassword(''); setActive(true); setPermissions({}); }; const load = (x) => { setEditing(x); setName(x.name); setEmail(x.username || ''); setPassword(''); setActive(!!x.active); try {
+    setPermissions(JSON.parse(x.permissions));
 }
+catch {
+    setPermissions({});
+} }; return React.createElement("div", { className: "grid" },
+    React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "cardhead" },
+            React.createElement("div", null,
+                React.createElement("h3", null, editing ? 'تعديل حساب المدير' : 'إضافة مدير'),
+                React.createElement("p", null, "\u0635\u0627\u062D\u0628 \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u062D\u062F\u0647 \u064A\u062F\u064A\u0631 \u0627\u0644\u0635\u0644\u0627\u062D\u064A\u0627\u062A."))),
+        React.createElement("label", null,
+            "\u0627\u0644\u0627\u0633\u0645",
+            React.createElement("input", { value: name, onChange: e => setName(e.target.value) })),
+        React.createElement("label", null,
+            "\u0631\u0642\u0645 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645",
+            React.createElement("input", { type: "text", inputMode: "numeric", dir: "ltr", disabled: !!editing, value: email, onChange: e => setEmail(e.target.value) })),
+        !editing && React.createElement("label", null,
+            "\u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631 \u0645\u0624\u0642\u062A\u0629 (\u0668 \u0623\u062D\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644)",
+            React.createElement("input", { type: "password", dir: "ltr", minLength: 8, value: password, onChange: e => setPassword(e.target.value), autoComplete: "new-password" })),
+        React.createElement("div", { className: "hint" }, "\u0635\u0644\u0627\u062D\u064A\u0629 \u0627\u0644\u062D\u0633\u0627\u0628\u0627\u062A \u0623\u0648 \u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u062A\u0639\u0631\u0636 \u062A\u0641\u0627\u0635\u064A\u0644 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0648\u0623\u0633\u0645\u0627\u0621 \u0627\u0644\u0634\u0631\u0643\u0627\u062A \u0648\u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0627\u0644\u0644\u0627\u0632\u0645\u0629 \u0644\u0644\u062D\u0633\u0627\u0628\u0627\u062A. \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u062A\u0636\u0627\u0641 \u0645\u0646 \u0635\u0641\u062D\u0629 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0648\u0644\u0627 \u062A\u062F\u062E\u0644 \u0636\u0645\u0646 \u0627\u0644\u0645\u062F\u064A\u0631\u064A\u0646."),
+        React.createElement("div", { className: "tablewrap" },
+            React.createElement("table", null,
+                React.createElement("thead", null,
+                    React.createElement("tr", null,
+                        React.createElement("th", null, "\u0627\u0644\u0642\u0633\u0645"),
+                        React.createElement("th", null, "\u0639\u0631\u0636"),
+                        React.createElement("th", null, "\u0625\u0636\u0627\u0641\u0629 \u0648\u062A\u0639\u062F\u064A\u0644"))),
+                React.createElement("tbody", null, accessAreas.map(([key, label]) => React.createElement("tr", { key: key },
+                    React.createElement("td", null, label),
+                    React.createElement("td", null,
+                        React.createElement("input", { type: "checkbox", checked: !!permissions[key]?.view, onChange: e => setPermissions({ ...permissions, [key]: { view: e.target.checked, edit: e.target.checked && !!permissions[key]?.edit } }) })),
+                    React.createElement("td", null,
+                        React.createElement("input", { type: "checkbox", checked: !!permissions[key]?.edit, disabled: !permissions[key]?.view, onChange: e => setPermissions({ ...permissions, [key]: { view: true, edit: e.target.checked } }) }))))))),
+        React.createElement("label", { className: "checkline" },
+            React.createElement("input", { type: "checkbox", checked: active, onChange: e => setActive(e.target.checked) }),
+            " \u0627\u0644\u062D\u0633\u0627\u0628 \u0646\u0634\u0637"),
+        React.createElement("div", { className: "formactions" },
+            React.createElement("button", { disabled: !name || !email || busy || !editing && password.length < 8, onClick: () => act(editing ? { op: 'staff', id: editing.id, name, permissions, active } : { op: 'provision', role: 'manager', name, username: email, password, permissions }, reset) }, "\u062D\u0641\u0638 \u0627\u0644\u0645\u062F\u064A\u0631 \u0648\u0627\u0644\u0635\u0644\u0627\u062D\u064A\u0627\u062A"),
+            editing && React.createElement("button", { className: "subtle", onClick: reset }, "\u0625\u0644\u063A\u0627\u0621")),
+        React.createElement("p", { className: "muted" }, "\u064A\u0633\u062A\u062E\u062F\u0645 \u0627\u0644\u0645\u062F\u064A\u0631 \u0627\u0644\u0631\u0642\u0645 \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0644\u0644\u062F\u062E\u0648\u0644.")),
+    React.createElement("div", { className: "card" },
+        React.createElement("h3", null, "\u0627\u0644\u0645\u062F\u064A\u0631\u0648\u0646"),
+        users.length ? users.map((u) => React.createElement("div", { className: "listrow", key: u.id },
+            React.createElement("div", null,
+                React.createElement("b", null, u.name),
+                React.createElement("small", null,
+                    u.username ? 'رقم المستخدم: ' + u.username : 'دخول غير مفعّل',
+                    " \u00B7 ",
+                    u.active ? 'نشط' : 'موقوف')),
+            React.createElement("div", null,
+                React.createElement("button", { className: "subtle", onClick: () => load(u) }, "\u0627\u0644\u0635\u0644\u0627\u062D\u064A\u0627\u062A"),
+                u.username ? React.createElement(ResetPassword, { id: u.id, role: "manager", act: act }) : React.createElement(LinkAccount, { id: u.id, role: "manager", act: act })))) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u0645\u062F\u064A\u0631 \u0645\u0636\u0627\u0641", detail: "\u0623\u0636\u0641 \u0627\u0644\u0645\u062F\u064A\u0631 \u0648\u062D\u062F\u062F \u0627\u0644\u0623\u0642\u0633\u0627\u0645 \u0627\u0644\u0644\u064A \u064A\u0634\u0648\u0641\u0647\u0627 \u0648\u0627\u0644\u0639\u0645\u0644\u064A\u0627\u062A \u0627\u0644\u0644\u064A \u064A\u0639\u0645\u0644\u0647\u0627." })),
+    React.createElement("div", { className: "card space", style: { gridColumn: '1 / -1' } },
+        React.createElement("h3", null, "\u0635\u0644\u0627\u062D\u064A\u0627\u062A \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628"),
+        React.createElement("p", null, "\u0643\u0644 \u0645\u0646\u062F\u0648\u0628 \u064A\u0634\u0648\u0641 \u0634\u062D\u0646\u0627\u062A\u0647 \u0641\u0642\u0637. \u062A\u0642\u062F\u0631 \u062A\u062D\u062F\u062F \u0644\u0643\u0644 \u0645\u0646\u062F\u0648\u0628 \u0644\u0648 \u064A\u0634\u0648\u0641 \u062D\u0633\u0627\u0628\u0647 \u0623\u0648 \u064A\u062D\u062F\u0651\u062B \u0627\u0644\u062D\u0627\u0644\u0627\u062A."),
+        drivers.length ? drivers.map((d) => { let p = driverPermissions.find((x) => x.driver_id === d.id) || { account: 1, status: 1 }; return React.createElement("div", { className: "listrow", key: d.id },
+            React.createElement("div", null,
+                React.createElement("b", null, d.name),
+                React.createElement("small", null, d.username ? 'رقم المستخدم: ' + d.username : 'دخول غير مفعّل')),
+            React.createElement("label", { className: "checkline" },
+                React.createElement("input", { type: "checkbox", checked: !!p.account, disabled: busy, onChange: e => act({ op: 'driver_access', id: d.id, account: e.target.checked, status: !!p.status }) }),
+                " \u0639\u0631\u0636 \u062D\u0633\u0627\u0628\u0647"),
+            React.createElement("label", { className: "checkline" },
+                React.createElement("input", { type: "checkbox", checked: !!p.status, disabled: busy, onChange: e => act({ op: 'driver_access', id: d.id, account: !!p.account, status: e.target.checked }) }),
+                " \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u062D\u0627\u0644\u0627\u062A")); }) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u0645\u0646\u0627\u062F\u064A\u0628 \u0645\u0636\u0627\u0641\u064A\u0646", detail: "\u0623\u0636\u0641 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0645\u0646 \u0635\u0641\u062D\u0629 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628." }))); }
+function AccountsPanel({ entries, payments, shipments, day, setDay, act, busy, canEdit }) { const [type, setType] = useState('capital'), [amount, setAmount] = useState(''), [note, setNote] = useState(''); const sum = (a, f) => a.reduce((t, x) => t + f(x), 0); const byDay = (x) => businessDate(x.created) <= day; const cash = entries.filter(byDay), pay = payments.filter(byDay), delivered = shipments.filter((s) => isFinal(s) && businessDate(s.delivered) <= day); const capital = sum(cash.filter((x) => x.type === 'capital'), (x) => x.amount), other = sum(cash.filter((x) => x.type === 'income'), (x) => x.amount), expenses = sum(cash.filter((x) => x.type === 'expense'), (x) => x.amount), from = sum(pay.filter((x) => x.type === 'driver'), (x) => x.amount), to = sum(pay.filter((x) => x.type === 'company'), (x) => x.amount); const gross = sum(delivered, collected), earned = sum(delivered, (x) => x.delivery - x.driver_fee), driversDue = sum(delivered, driverDue) - from, companiesDue = sum(delivered, companyDue) - to; const today = day === businessDate(new Date()); return React.createElement(React.Fragment, null,
+    React.createElement(DateSelect, { day: day, setDay: setDay }),
+    React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "cardhead" },
+            React.createElement("div", null,
+                React.createElement("h3", null, "\u0627\u0644\u062E\u0632\u0646\u0629 \u0648\u062D\u0633\u0627\u0628 \u0627\u0644\u0634\u0631\u0643\u0629"),
+                React.createElement("p", null, "\u0623\u0631\u0635\u062F\u0629 \u0645\u062A\u0631\u0627\u0643\u0645\u0629 \u062D\u062A\u0649 \u0646\u0647\u0627\u064A\u0629 \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631 \u00B7 \u062A\u0628\u062F\u0623 \u0645\u0646 \u0635\u0641\u0631"))),
+        React.createElement("div", { className: "moneygrid" },
+            React.createElement("div", { className: "highlight" },
+                React.createElement("small", null, "\u0631\u0635\u064A\u062F \u0627\u0644\u062E\u0632\u0646\u0629 \u0627\u0644\u0645\u062D\u0633\u0648\u0628"),
+                React.createElement("b", null, fmt(capital + other - expenses + from - to))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0631\u0623\u0633 \u0627\u0644\u0645\u0627\u0644 \u0627\u0644\u0645\u0633\u062C\u0644"),
+                React.createElement("b", null, fmt(capital))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0645\u0627 \u0648\u0631\u062F \u0645\u0646 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628"),
+                React.createElement("b", null, fmt(from))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0645\u0627 \u062F\u064F\u0641\u0639 \u0644\u0644\u0634\u0631\u0643\u0627\u062A"),
+                React.createElement("b", null, fmt(to))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0625\u064A\u0631\u0627\u062F\u0627\u062A \u0623\u062E\u0631\u0649 \u0646\u0642\u062F\u064A\u0629"),
+                React.createElement("b", null, fmt(other))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u0635\u0631\u0648\u0641\u0627\u062A \u0627\u0644\u0646\u0642\u062F\u064A\u0629"),
+                React.createElement("b", null, fmt(expenses))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u062A\u062D\u0635\u064A\u0644 \u0645\u0646 \u0627\u0644\u0639\u0645\u0644\u0627\u0621"),
+                React.createElement("b", null, fmt(gross))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u062A\u0628\u0642\u064A \u0639\u0646\u062F \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628"),
+                React.createElement("b", null, fmt(driversDue))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0645\u062A\u0628\u0642\u064A \u0644\u0644\u0634\u0631\u0643\u0627\u062A"),
+                React.createElement("b", null, fmt(companiesDue))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u062F\u062E\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0627\u0644\u0645\u0633\u062A\u062D\u0642"),
+                React.createElement("b", null, fmt(earned))),
+            React.createElement("div", null,
+                React.createElement("small", null, "\u0627\u0644\u0646\u062A\u064A\u062C\u0629 \u0628\u0639\u062F \u0627\u0644\u0645\u0635\u0631\u0648\u0641\u0627\u062A \u0627\u0644\u0645\u0633\u062C\u0644\u0629"),
+                React.createElement("b", null, fmt(earned + other - expenses)))),
+        React.createElement("p", { className: "muted" }, "\u0627\u0644\u062E\u0632\u0646\u0629 = \u0631\u0623\u0633 \u0627\u0644\u0645\u0627\u0644 + \u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A \u0627\u0644\u0623\u062E\u0631\u0649 + \u0645\u0627 \u062A\u0645 \u062A\u0648\u0631\u064A\u062F\u0647 \u0645\u0646 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u2212 \u0627\u0644\u0645\u062F\u0641\u0648\u0639 \u0644\u0644\u0634\u0631\u0643\u0627\u062A \u2212 \u0627\u0644\u0645\u0635\u0631\u0648\u0641\u0627\u062A. \u0627\u0644\u062A\u062D\u0635\u064A\u0644 \u0644\u062F\u0649 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u064A\u0638\u0647\u0631 \u0628\u0634\u0643\u0644 \u0645\u0646\u0641\u0635\u0644 \u062D\u062A\u0649 \u064A\u062A\u0645 \u062A\u0648\u0631\u064A\u062F\u0647\u0627. \u0627\u0644\u0646\u062A\u064A\u062C\u0629 \u0645\u0628\u0646\u064A\u0629 \u0639\u0644\u0649 \u062F\u062E\u0644 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u0644\u0651\u0645\u0629 \u0648\u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A \u0648\u0627\u0644\u0645\u0635\u0627\u0631\u064A\u0641 \u0627\u0644\u0645\u0633\u062C\u0644\u0629 \u0641\u0642\u0637.")),
+    React.createElement("div", { className: "grid space" },
+        React.createElement("div", { className: "card" },
+            React.createElement("h3", null, "\u0625\u0636\u0627\u0641\u0629 \u062D\u0631\u0643\u0629 \u0644\u0644\u062E\u0632\u0646\u0629"),
+            React.createElement("label", null,
+                "\u0646\u0648\u0639 \u0627\u0644\u062D\u0631\u0643\u0629",
+                React.createElement("select", { value: type, onChange: e => setType(e.target.value) },
+                    React.createElement("option", { value: "capital" }, "\u0625\u064A\u062F\u0627\u0639 \u0631\u0623\u0633 \u0645\u0627\u0644"),
+                    React.createElement("option", { value: "income" }, "\u0625\u064A\u0631\u0627\u062F \u0646\u0642\u062F\u064A \u0622\u062E\u0631"),
+                    React.createElement("option", { value: "expense" }, "\u0645\u0635\u0631\u0648\u0641 \u0646\u0642\u062F\u064A"))),
+            React.createElement("label", null,
+                "\u0627\u0644\u0645\u0628\u0644\u063A \u0628\u0627\u0644\u062C\u0646\u064A\u0647",
+                React.createElement("input", { type: "number", min: "0.01", step: "0.01", value: amount, onChange: e => setAmount(e.target.value) })),
+            React.createElement("label", null,
+                "\u0627\u0644\u0628\u064A\u0627\u0646",
+                React.createElement("input", { value: note, onChange: e => setNote(e.target.value), placeholder: "\u0645\u062B\u0627\u0644: \u0631\u0623\u0633 \u0645\u0627\u0644 \u0623\u0648 \u0625\u064A\u062C\u0627\u0631" })),
+            React.createElement("button", { disabled: !canEdit || !today || !amount || !note || busy, onClick: () => act({ op: 'cash', type, amount: cents(amount), note }, () => { setAmount(''); setNote(''); }) }, "\u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062D\u0631\u0643\u0629"),
+            !today && React.createElement("p", { className: "muted" }, "\u0627\u0644\u062A\u0633\u062C\u064A\u0644 \u0628\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u064A\u0648\u0645 \u0641\u0642\u0637.")),
+        React.createElement("div", { className: "card" },
+            React.createElement("h3", null, "\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u062E\u0632\u0646\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629"),
+            cash.length ? cash.map((x) => React.createElement("div", { className: "listrow", key: x.id },
+                React.createElement("div", null,
+                    React.createElement("b", null, x.note),
+                    React.createElement("small", null,
+                        x.type === 'capital' ? 'رأس مال' : x.type === 'income' ? 'إيراد آخر' : 'مصروف',
+                        " \u00B7 ",
+                        businessDate(x.created))),
+                React.createElement("b", null,
+                    x.type === 'expense' ? '−' : '+',
+                    " ",
+                    fmt(x.amount)))) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u062D\u0631\u0643\u0627\u062A \u0628\u0639\u062F", detail: "\u0633\u062C\u0651\u0644 \u0631\u0623\u0633 \u0627\u0644\u0645\u0627\u0644 \u0648\u0627\u0644\u0645\u0635\u0631\u0648\u0641\u0627\u062A \u0647\u0646\u0627." })))); }
+function CompanyReports({ companies, shipments, events, day, setDay }) {
+    const [company, setCompany] = useState('');
+    const id = Number(company), name = companies.find((c) => c.id === id)?.name || '';
+    const rows = companyReport(shipments, events, id, day, businessDate(new Date()));
+    const state = (value) => ({ new: 'لم يتم التسليم', transit: 'لم يتم التسليم', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة', unknown: 'الحالة غير متاحة تاريخيًا' }[value] || 'الحالة غير متاحة تاريخيًا');
+    const finalized = rows.filter(e => ['delivered', 'partial', 'returned_visit'].includes(e.status)), due = finalized.reduce((t, e) => t + companyDue({ ...e.shipment, status: e.status }), 0);
+    const save = () => {
+        const wb = XLSX.utils.book_new();
+        const intro = [{ 'اسم الشركة': name, 'الحالة حتى تاريخ': day, 'التوقيت': 'القاهرة', 'ملاحظات': 'صف واحد لكل شحنة. قيمة الشركة قبل خصم أي تسويات مدفوعة؛ محسوبة للحالات المقفولة فقط. تحصيل رفض الزيارة هو التوصيل فقط، والاستلام الجزئي بالمبلغ المسجل. بعض الحالات القديمة غير متاحة تاريخيًا. المبالغ بالجنيه.' }];
+        const list = rows.map(e => ({ 'رقم الشحنة': String(e.shipment.tracking), 'حالة الشحنة': state(e.status), 'اسم العميل': String(e.shipment.customer), 'رقم التليفون': String(e.shipment.phone), 'العنوان': String(e.shipment.address), 'المنتج': String(e.shipment.product), 'قيمة الأوردر شامل التوصيل': e.shipment.total / 100, 'قيمة التوصيل': e.shipment.delivery / 100, 'التحصيل المسجل': ['delivered', 'partial', 'returned_visit'].includes(e.status) ? collected({ ...e.shipment, status: e.status }) / 100 : 'غير مسجل', 'قيمة الشركة قبل التسويات': ['delivered', 'partial', 'returned_visit'].includes(e.status) ? companyDue({ ...e.shipment, status: e.status }) / 100 : 'غير محسوب', 'ملاحظة': String(e.note || '') }));
+        const total = [{ 'عدد الشحنات': rows.length, 'عدد الحالات المقفولة': finalized.length, 'قيمة الشركة قبل التسويات للحالات المقفولة': due / 100 }];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(intro), 'بيانات التقرير');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(list.length ? list : [{ 'ملاحظة': 'لا توجد شحنات حتى التاريخ المختار' }]), 'الشحنات');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(total), 'الملخص');
+        XLSX.writeFile(wb, `company-${id}-${day}.xlsx`);
+    };
+    return React.createElement(React.Fragment, null,
+        React.createElement(DateSelect, { day: day, setDay: setDay }),
+        React.createElement("div", { className: "card" },
+            React.createElement("div", { className: "cardhead" },
+                React.createElement("div", null,
+                    React.createElement("h3", null, "\u062A\u0642\u0631\u064A\u0631 \u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0629"),
+                    React.createElement("p", null, "\u0634\u062D\u0646\u0627\u062A \u0634\u0631\u0643\u0629 \u0648\u0627\u062D\u062F\u0629 \u0648\u062D\u0627\u0644\u0629 \u0643\u0644 \u0634\u062D\u0646\u0629 \u062D\u062A\u0649 \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631"))),
+            React.createElement("label", null,
+                "\u0627\u0644\u0634\u0631\u0643\u0629 \u0635\u0627\u062D\u0628\u0629 \u0627\u0644\u0634\u062D\u0646\u0627\u062A",
+                React.createElement("select", { value: company, onChange: e => setCompany(e.target.value) },
+                    React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u0634\u0631\u0643\u0629"),
+                    companies.map((c) => React.createElement("option", { key: c.id, value: c.id }, c.name)))),
+            React.createElement("div", { className: "hint" }, "\u0627\u0644\u062A\u0642\u0631\u064A\u0631 \u062A\u0631\u0627\u0643\u0645\u064A \u062D\u062A\u0649 \u0646\u0647\u0627\u064A\u0629 \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631\u061B \u0643\u0644 \u0634\u062D\u0646\u0629 \u062A\u0638\u0647\u0631 \u0645\u0631\u0629 \u0648\u0627\u062D\u062F\u0629 \u0628\u0623\u062D\u062F\u062B \u062D\u0627\u0644\u0629 \u0645\u062A\u0627\u062D\u0629. \u0642\u064A\u0645\u0629 \u0627\u0644\u0634\u0631\u0643\u0629 \u0627\u0644\u0645\u0639\u0631\u0648\u0636\u0629 \u0642\u0628\u0644 \u062E\u0635\u0645 \u0623\u064A \u0645\u0628\u0627\u0644\u063A \u0633\u064F\u062F\u062F\u062A \u0644\u0647\u0627. \u0627\u0644\u0645\u0628\u0627\u0644\u063A \u062A\u0634\u0645\u0644 \u0627\u0644\u062D\u0627\u0644\u0627\u062A \u0627\u0644\u0645\u0642\u0641\u0648\u0644\u0629 \u0648\u062A\u0633\u062A\u0628\u0639\u062F \u0623\u064A \u062A\u0633\u0648\u064A\u0627\u062A \u0645\u062F\u0641\u0648\u0639\u0629. \u0628\u0639\u0636 \u0627\u0644\u062D\u0627\u0644\u0627\u062A \u0627\u0644\u0642\u062F\u064A\u0645\u0629 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629 \u062A\u0627\u0631\u064A\u062E\u064A\u064B\u0627."),
+            company && React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "moneygrid" },
+                    React.createElement("div", null,
+                        React.createElement("small", null, "\u0639\u062F\u062F \u0627\u0644\u0634\u062D\u0646\u0627\u062A"),
+                        React.createElement("b", null, rows.length)),
+                    React.createElement("div", null,
+                        React.createElement("small", null, "\u062D\u0627\u0644\u0627\u062A \u0645\u0642\u0641\u0648\u0644\u0629"),
+                        React.createElement("b", null, finalized.length)),
+                    React.createElement("div", null,
+                        React.createElement("small", null, "\u0642\u064A\u0645\u0629 \u0627\u0644\u0634\u0631\u0643\u0629 \u0642\u0628\u0644 \u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0644\u0644\u062D\u0627\u0644\u0627\u062A \u0627\u0644\u0645\u0642\u0641\u0648\u0644\u0629"),
+                        React.createElement("b", null, fmt(due)))),
+                React.createElement("button", { onClick: save }, "\u2193 \u062A\u0646\u0632\u064A\u0644 \u062A\u0642\u0631\u064A\u0631 Excel"),
+                rows.length ? React.createElement("div", { className: "tablewrap space" },
+                    React.createElement("table", null,
+                        React.createElement("thead", null,
+                            React.createElement("tr", null,
+                                React.createElement("th", null, "\u0631\u0642\u0645 \u0627\u0644\u0634\u062D\u0646\u0629"),
+                                React.createElement("th", null, "\u0627\u0644\u0639\u0645\u064A\u0644"),
+                                React.createElement("th", null, "\u062D\u0627\u0644\u0629 \u0627\u0644\u0634\u062D\u0646\u0629"),
+                                React.createElement("th", null, "\u0627\u0644\u0645\u0628\u0644\u063A \u0627\u0644\u0645\u062D\u0635\u0651\u0644"),
+                                React.createElement("th", null, "\u0642\u064A\u0645\u0629 \u0627\u0644\u0634\u0631\u0643\u0629 \u0642\u0628\u0644 \u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A"),
+                                React.createElement("th", null, "\u0627\u0644\u0645\u0644\u0627\u062D\u0638\u0629"))),
+                        React.createElement("tbody", null, rows.map((e, i) => React.createElement("tr", { key: i },
+                            React.createElement("td", null, e.shipment.tracking),
+                            React.createElement("td", null, e.shipment.customer),
+                            React.createElement("td", null, state(e.status)),
+                            React.createElement("td", null, ['delivered', 'partial', 'returned_visit'].includes(e.status) ? fmt(collected({ ...e.shipment, status: e.status })) : 'غير مسجل'),
+                            React.createElement("td", null, ['delivered', 'partial', 'returned_visit'].includes(e.status) ? fmt(companyDue({ ...e.shipment, status: e.status })) : 'غير محسوب'),
+                            React.createElement("td", null, e.note || '—')))))) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u0634\u062D\u0646\u0627\u062A \u062D\u062A\u0649 \u0647\u0630\u0627 \u0627\u0644\u062A\u0627\u0631\u064A\u062E", detail: "\u062A\u0623\u0643\u062F \u0645\u0646 \u0627\u062E\u062A\u064A\u0627\u0631 \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u0646\u0627\u0633\u0628\u064A\u0646." }))));
+}
+function LocationShare() {
+    const [active, setActive] = useState(false), [message, setMessage] = useState(''), [busy, setBusy] = useState(false);
+    const running = useRef(false), timer = useRef(null), pending = useRef(null);
+    const send = () => { if (!running.current || !navigator.geolocation)
+        return; navigator.geolocation.getCurrentPosition(pos => { if (!running.current || pending.current)
+        return; const request = apiFetch('/api/data', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op: 'location', latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy }) }).then(async (r) => { if (!r.ok)
+        throw Error('تعذر إرسال الموقع'); if (running.current)
+        setMessage('تم إرسال الموقع. آخر تحديث: ' + new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })); }).catch(() => { if (running.current)
+        setMessage('تعذر إرسال الموقع، تحقق من الإنترنت.'); }); pending.current = request; void request.finally(() => { if (pending.current === request)
+        pending.current = null; }); }, error => { if (!running.current)
+        return; setMessage(error.code === 1 ? 'لم تسمح بمشاركة الموقع من الهاتف أو المتصفح.' : 'تعذر تحديد الموقع، تحقق من GPS.'); running.current = false; setActive(false); if (timer.current)
+        clearInterval(timer.current); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }); };
+    const start = () => { if (!navigator.geolocation) {
+        setMessage('المتصفح لا يدعم تحديد الموقع.');
+        return;
+    } running.current = true; setActive(true); setMessage('جاري طلب إذن الموقع من الهاتف والمتصفح...'); send(); timer.current = setInterval(send, 30000); };
+    const stop = async () => { running.current = false; setActive(false); if (timer.current)
+        clearInterval(timer.current); setBusy(true); try {
+        if (pending.current)
+            await pending.current;
+        const r = await apiFetch('/api/data', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ op: 'location_stop' }) });
+        setMessage(r.ok ? 'تم إيقاف مشاركة الموقع.' : 'توقف الإرسال، لكن تعذر تحديث الحالة للإدارة.');
+    }
+    catch {
+        setMessage('توقف الإرسال، لكن تعذر تحديث الحالة للإدارة.');
+    }
+    finally {
+        setBusy(false);
+    } };
+    useEffect(() => () => { running.current = false; if (timer.current)
+        clearInterval(timer.current); }, []);
+    return React.createElement("div", { className: "location-share" },
+        React.createElement("div", null,
+            React.createElement("b", null, "\u0645\u0634\u0627\u0631\u0643\u0629 \u0645\u0648\u0642\u0639\u064A \u0645\u0639 \u0627\u0644\u0625\u062F\u0627\u0631\u0629"),
+            React.createElement("p", null, active ? 'مشاركة الموقع مفعّلة أثناء فتح الصفحة واتصال الإنترنت.' : 'اضغط تشغيل واسمح بالموقع من موبايلك. المشاركة تعمل أثناء فتح الصفحة.'),
+            message && React.createElement("small", { role: "status" }, message)),
+        active ? React.createElement("button", { onClick: stop, disabled: busy, className: "danger-outline" }, "\u0625\u064A\u0642\u0627\u0641 \u0627\u0644\u0645\u0648\u0642\u0639") : React.createElement("button", { onClick: start, disabled: busy }, "\u062A\u0634\u063A\u064A\u0644 \u0627\u0644\u0645\u0648\u0642\u0639"));
+}
+function DriverMonitor({ drivers, shipments, events, locations, day, setDay, refresh }) { const shipmentMap = new Map(shipments.map((s) => [s.id, s])); const dayEvents = events.filter((e) => e.driver_id && businessDate(e.created) === day && shipmentMap.has(e.shipment_id)).sort((a, b) => b.created.localeCompare(a.created)); const at = (x) => new Date(x).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }); const state = (loc) => { if (!loc)
+    return 'لم يشارك الموقع بعد'; if (!loc.active)
+    return 'المشاركة متوقفة · آخر موقع'; return Date.now() - new Date(loc.updated).getTime() > 120000 ? 'الموقع قديم · آخر تحديث' : 'آخر موقع مستلم'; }; return React.createElement(React.Fragment, null,
+    React.createElement(DateSelect, { day: day, setDay: setDay }),
+    React.createElement("div", { className: "hint top-hint" }, "\u0627\u0644\u0645\u0648\u0642\u0639 \u064A\u0638\u0647\u0631 \u0641\u0642\u0637 \u0628\u0639\u062F \u0645\u0648\u0627\u0641\u0642\u0629 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0648\u062A\u0634\u063A\u064A\u0644\u0647 \u0645\u0646 \u062D\u0633\u0627\u0628\u0647. \u0627\u0644\u062A\u062D\u062F\u064A\u062B \u0623\u062B\u0646\u0627\u0621 \u0641\u062A\u062D \u0627\u0644\u0635\u0641\u062D\u0629 \u0648\u0627\u062A\u0635\u0627\u0644 \u0627\u0644\u0647\u0627\u062A\u0641\u061B \u0648\u0642\u062A \u0622\u062E\u0631 \u062A\u062D\u062F\u064A\u062B \u064A\u0648\u0636\u062D \u062D\u062F\u0627\u062B\u0629 \u0627\u0644\u0645\u0648\u0642\u0639. \u0627\u0644\u062E\u0631\u064A\u0637\u0629 \u062A\u0641\u062A\u062D Google Maps \u0639\u0646\u062F \u0627\u0644\u0636\u063A\u0637."),
+    React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "cardhead" },
+            React.createElement("div", null,
+                React.createElement("h3", null, "\u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0648\u0645\u0648\u0627\u0642\u0639\u0647\u0645"),
+                React.createElement("p", null, "\u0622\u062E\u0631 \u0645\u0648\u0642\u0639 \u0645\u0633\u062A\u0644\u0645 \u00B7 \u062A\u062D\u062F\u064A\u062B \u062A\u0644\u0642\u0627\u0626\u064A \u0643\u0644 \u0663\u0660 \u062B\u0627\u0646\u064A\u0629")),
+            React.createElement("button", { className: "subtle", onClick: refresh }, "\u21BB \u062A\u062D\u062F\u064A\u062B")),
+        drivers.length ? React.createElement("div", { className: "drivercards" }, drivers.map((d) => { const list = shipments.filter((s) => s.driver_id === d.id), loc = locations.find((x) => x.driver_id === d.id); const dv = list.filter((s) => s.delivered && businessDate(s.delivered) === day).length; return React.createElement("div", { className: "drivercard", key: d.id },
+            React.createElement("div", { className: "cardhead" },
+                React.createElement("div", null,
+                    React.createElement("h3", null, d.name),
+                    React.createElement("p", null, d.phone || 'بدون رقم هاتف')),
+                React.createElement("span", { className: "tag" },
+                    list.filter((s) => s.status === 'transit').length,
+                    " \u062C\u0627\u0631\u064A \u062A\u0648\u0635\u064A\u0644\u0647\u0627")),
+            React.createElement("div", { className: "monitor-stats" },
+                React.createElement("span", null,
+                    "\u062A\u0645 \u062A\u0633\u0644\u064A\u0645\u0647\u0627 \u0641\u064A \u0627\u0644\u064A\u0648\u0645: ",
+                    React.createElement("b", null, dv)),
+                React.createElement("span", null,
+                    "\u0645\u0624\u062C\u0644\u0629 \u062D\u0627\u0644\u064A\u064B\u0627: ",
+                    React.createElement("b", null, list.filter((s) => s.status === 'postponed').length)),
+                React.createElement("span", null,
+                    "\u0645\u0631\u062A\u062C\u0639\u0629 \u062D\u0627\u0644\u064A\u064B\u0627: ",
+                    React.createElement("b", null, list.filter((s) => ['returned', 'returned_visit'].includes(s.status)).length))),
+            React.createElement("div", { className: "location-box" },
+                React.createElement("b", null, state(loc)),
+                loc && React.createElement(React.Fragment, null,
+                    React.createElement("small", null,
+                        "\u0622\u062E\u0631 \u062A\u062D\u062F\u064A\u062B: ",
+                        at(loc.updated),
+                        " \u0628\u062A\u0648\u0642\u064A\u062A \u0627\u0644\u0642\u0627\u0647\u0631\u0629"),
+                    React.createElement("small", null,
+                        "\u0627\u0644\u062F\u0642\u0629 \u0627\u0644\u062A\u0642\u0631\u064A\u0628\u064A\u0629: ",
+                        loc.accuracy == null ? 'غير متاحة' : Math.round(loc.accuracy) + ' متر'),
+                    React.createElement("a", { target: "_blank", rel: "noopener noreferrer", href: 'https://www.google.com/maps?q=' + encodeURIComponent(loc.latitude + ',' + loc.longitude) }, "\u0641\u062A\u062D \u0627\u0644\u0645\u0648\u0642\u0639 \u0639\u0644\u0649 \u0627\u0644\u062E\u0631\u064A\u0637\u0629 \u2197")))); })) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u0645\u0646\u0627\u062F\u064A\u0628 \u0644\u0633\u0647", detail: "\u0623\u0636\u0641 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0639\u0634\u0627\u0646 \u062A\u062A\u0627\u0628\u0639 \u0634\u062D\u0646\u0627\u062A\u0647\u0645 \u0648\u0645\u0648\u0627\u0642\u0639\u0647\u0645." })),
+    React.createElement("div", { className: "card space" },
+        React.createElement("div", { className: "cardhead" },
+            React.createElement("div", null,
+                React.createElement("h3", null, "\u0646\u0634\u0627\u0637 \u0627\u0644\u064A\u0648\u0645"),
+                React.createElement("p", null, "\u0622\u062E\u0631 \u062A\u063A\u064A\u064A\u0631\u0627\u062A \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u062C\u0644\u0629 \u0645\u0639 \u0627\u0633\u0645 \u0627\u0644\u0645\u0646\u062F\u0648\u0628"))),
+        dayEvents.length ? React.createElement("div", { className: "tablewrap" },
+            React.createElement("table", null,
+                React.createElement("thead", null,
+                    React.createElement("tr", null,
+                        React.createElement("th", null, "\u0627\u0644\u0648\u0642\u062A"),
+                        React.createElement("th", null, "\u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+                        React.createElement("th", null, "\u0627\u0644\u0634\u062D\u0646\u0629"),
+                        React.createElement("th", null, "\u0627\u0644\u062D\u0627\u0644\u0629"),
+                        React.createElement("th", null, "\u0645\u0644\u0627\u062D\u0638\u0629"))),
+                React.createElement("tbody", null, dayEvents.map((e) => React.createElement("tr", { key: e.id },
+                    React.createElement("td", null, at(e.created)),
+                    React.createElement("td", null, drivers.find((d) => d.id === e.driver_id)?.name || 'مندوب غير متاح'),
+                    React.createElement("td", null,
+                        "#",
+                        shipmentMap.get(e.shipment_id)?.tracking || '—'),
+                    React.createElement("td", null, labels[e.status] || e.status),
+                    React.createElement("td", null, e.note || '—')))))) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u0646\u0634\u0627\u0637 \u0645\u0633\u062C\u0644 \u0641\u064A \u0627\u0644\u064A\u0648\u0645 \u062F\u0647", detail: "\u0627\u0644\u0646\u0634\u0627\u0637 \u0627\u0644\u0645\u0641\u0635\u0644 \u0628\u0627\u0633\u0645 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0628\u064A\u062A\u0633\u062C\u0644 \u0645\u0646 \u0648\u0642\u062A \u0627\u0644\u062A\u062D\u062F\u064A\u062B." }),
+        React.createElement("p", { className: "muted" }, "\u0627\u0644\u0633\u062C\u0644\u0627\u062A \u0627\u0644\u0623\u0642\u062F\u0645 \u0627\u0644\u062A\u064A \u0644\u0645 \u064A\u064F\u062D\u0641\u0638 \u0641\u064A\u0647\u0627 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0644\u0627 \u062A\u0638\u0647\u0631 \u0647\u0646\u0627\u061B \u0644\u0627 \u0646\u0646\u0633\u0628 \u062D\u0631\u0643\u0629 \u0644\u0645\u0646\u062F\u0648\u0628 \u0628\u062F\u0648\u0646 \u0628\u064A\u0627\u0646\u0627\u062A \u0645\u0624\u0643\u062F\u0629."))); }
+function DailyClose({ drivers, shipments, payments, closures, day, act, busy, canEdit, canReopen }) { const [party, setParty] = useState(''), [amount, setAmount] = useState(''); const today = day === businessDate(new Date()); const list = closures.filter((x) => x.day === day); const closed = list.find((x) => x.driver_id === Number(party) && !x.reopened_at); const balance = party ? dayAccount(shipments, payments, 'driver', Number(party), day).closing : 0; return React.createElement("div", { className: "card space" },
+    React.createElement("div", { className: "cardhead" },
+        React.createElement("div", null,
+            React.createElement("h3", null, "\u0625\u0642\u0641\u0627\u0644 \u064A\u0648\u0645 \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+            React.createElement("p", null, "\u064A\u0634\u0645\u0644 \u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0633\u0627\u0628\u0642\u061B \u0623\u064A \u0646\u0642\u0635 \u064A\u062A\u0631\u062D\u0651\u0644 \u062A\u0644\u0642\u0627\u0626\u064A\u064B\u0627 \u0644\u0644\u064A\u0648\u0645 \u0627\u0644\u062A\u0627\u0644\u064A."))),
+    React.createElement("div", { className: "mapping" },
+        React.createElement("label", null,
+            "\u0627\u0644\u0645\u0646\u062F\u0648\u0628",
+            React.createElement("select", { value: party, onChange: e => setParty(e.target.value) },
+                React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+                drivers.map((d) => React.createElement("option", { value: d.id, key: d.id }, d.name)))),
+        React.createElement("label", null,
+            "\u0627\u0644\u0645\u0628\u0644\u063A \u0627\u0644\u0645\u0633\u062A\u0644\u0645 \u0639\u0646\u062F \u0627\u0644\u0625\u0642\u0641\u0627\u0644 (\u062C.\u0645)",
+            React.createElement("input", { type: "number", min: "0", step: "0.01", value: amount, onChange: e => setAmount(e.target.value), placeholder: "\u0627\u0643\u062A\u0628 0 \u0644\u0648 \u0644\u0645 \u064A\u0648\u0631\u062F" }))),
+    React.createElement("p", null,
+        "\u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u0637\u0644\u0648\u0628 \u0642\u0628\u0644 \u0627\u0644\u0625\u0642\u0641\u0627\u0644: ",
+        React.createElement("b", null, fmt(balance))),
+    React.createElement("p", { className: "muted" }, "\u0623\u064A \u0645\u0628\u0644\u063A \u062A\u0645 \u062A\u0633\u062C\u064A\u0644 \u0627\u0633\u062A\u0644\u0627\u0645\u0647 \u0633\u0627\u0628\u0642\u064B\u0627 \u0645\u062D\u0633\u0648\u0628 \u0628\u0627\u0644\u0641\u0639\u0644. \u0639\u0646\u062F \u0627\u0644\u0625\u0642\u0641\u0627\u0644 \u064A\u062A\u0648\u0642\u0641 \u062A\u062D\u062F\u064A\u062B \u062D\u0627\u0644\u0627\u062A \u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0648\u062A\u0633\u0648\u064A\u0627\u062A\u0647 \u0644\u0628\u0627\u0642\u064A \u0627\u0644\u064A\u0648\u0645\u060C \u0648\u064A\u0645\u0643\u0646 \u0644\u0644\u0645\u0627\u0644\u0643 \u0625\u0639\u0627\u062F\u0629 \u0641\u062A\u062D\u0647 \u0628\u0633\u0628\u0628 \u0645\u0633\u062C\u0644."),
+    React.createElement("button", { disabled: !party || amount === '' || busy || !today || !canEdit || !!closed, onClick: () => { if (!confirm('تأكيد الإقفال وتسجيل المبلغ المستلم؟'))
+            return; act({ op: 'close_day', driverId: party, amount: cents(amount) }, () => setAmount('')); } }, "\u0625\u0642\u0641\u0627\u0644 \u0627\u0644\u064A\u0648\u0645"),
+    closed && React.createElement("p", { className: "muted" }, "\u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0645\u0642\u0641\u0644 \u0644\u0647\u0630\u0627 \u0627\u0644\u064A\u0648\u0645."),
+    !today && React.createElement("p", { className: "muted" }, "\u0627\u0644\u062A\u0633\u062C\u064A\u0644 \u0645\u062A\u0627\u062D \u0628\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u064A\u0648\u0645 \u0641\u0642\u0637."),
+    list.length > 0 && React.createElement("div", { className: "tablewrap space" },
+        React.createElement("table", null,
+            React.createElement("thead", null,
+                React.createElement("tr", null,
+                    React.createElement("th", null, "\u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
+                    React.createElement("th", null, "\u0627\u0644\u0645\u0637\u0644\u0648\u0628 \u0639\u0646\u062F \u0627\u0644\u0625\u0642\u0641\u0627\u0644"),
+                    React.createElement("th", null, "\u0627\u0644\u0645\u0633\u062A\u0644\u0645"),
+                    React.createElement("th", null, "\u0627\u0644\u0645\u062A\u0628\u0642\u064A"),
+                    React.createElement("th", null, "\u0627\u0644\u062D\u0627\u0644\u0629"),
+                    React.createElement("th", null))),
+            React.createElement("tbody", null, list.map((x) => React.createElement("tr", { key: x.id },
+                React.createElement("td", null, drivers.find((d) => d.id === x.driver_id)?.name || '—'),
+                React.createElement("td", null, fmt(x.expected)),
+                React.createElement("td", null, fmt(x.paid)),
+                React.createElement("td", null, fmt(x.remaining)),
+                React.createElement("td", null, x.reopened_at ? 'أعيد فتحه: ' + x.reopen_reason : 'مقفل'),
+                React.createElement("td", null, !x.reopened_at && today && canReopen && React.createElement("button", { className: "subtle", onClick: () => { const reason = prompt('اكتب سبب إعادة فتح يوم المندوب'); if (reason?.trim())
+                        act({ op: 'reopen_day', id: x.id, reason: reason.trim() }); } }, "\u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0641\u062A\u062D")))))))); }
+function CorrectShipment({ s, act }) { const [open, setOpen] = useState(false), [status, setStatus] = useState(s.status), [amount, setAmount] = useState(s.status === 'partial' ? String((s.collected || 0) / 100) : ''), [reason, setReason] = useState(''); if (!open)
+    return React.createElement("button", { className: "subtle", onClick: () => setOpen(true) }, "\u062A\u0635\u062D\u064A\u062D"); return React.createElement("div", { className: "correction-form" },
+    React.createElement("select", { value: status, onChange: e => setStatus(e.target.value), "aria-label": "\u0627\u0644\u062D\u0627\u0644\u0629 \u0627\u0644\u0635\u062D\u064A\u062D\u0629" },
+        React.createElement("option", { value: "delivered" }, "\u062A\u0633\u0644\u064A\u0645 \u0643\u0627\u0645\u0644"),
+        !!s.partial_allowed && React.createElement("option", { value: "partial" }, "\u0627\u0633\u062A\u0644\u0627\u0645 \u062C\u0632\u0626\u064A"),
+        React.createElement("option", { value: "returned_visit" }, "\u0631\u0641\u0636 \u0628\u0639\u062F \u0627\u0644\u0632\u064A\u0627\u0631\u0629")),
+    status === 'partial' && React.createElement("input", { type: "number", min: "0", step: "0.01", value: amount, onChange: e => setAmount(e.target.value), placeholder: "\u0627\u0644\u0645\u062D\u0635\u0651\u0644 \u0634\u0627\u0645\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644" }),
+    React.createElement("input", { value: reason, onChange: e => setReason(e.target.value), placeholder: "\u0633\u0628\u0628 \u0627\u0644\u062A\u0635\u062D\u064A\u062D" }),
+    React.createElement("small", null, "\u0645\u062A\u0627\u062D \u0644\u0646\u0641\u0633 \u064A\u0648\u0645 \u0627\u0644\u0625\u0642\u0641\u0627\u0644 \u0641\u0642\u0637\u060C \u0648\u0642\u0628\u0644 \u0623\u064A \u062A\u0633\u0648\u064A\u0629 \u0645\u0633\u062C\u0644\u0629 \u0644\u0644\u0645\u0646\u062F\u0648\u0628 \u0623\u0648 \u0627\u0644\u0634\u0631\u0643\u0629\u060C \u0648\u0628\u0639\u062F \u0641\u062A\u062D \u064A\u0648\u0645 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0625\u0646 \u0643\u0627\u0646 \u0645\u0642\u0641\u0648\u0644\u064B\u0627."),
+    React.createElement("div", { className: "formactions" },
+        React.createElement("button", { disabled: !reason.trim() || status === 'partial' && !amount, onClick: () => { if (confirm('تأكيد التصحيح وتسجيل السبب؟'))
+                act({ op: 'correct_shipment', id: s.id, status, reason, collected: status === 'partial' ? cents(amount) : undefined }, () => setOpen(false)); } }, "\u062A\u0623\u0643\u064A\u062F"),
+        React.createElement("button", { className: "subtle", onClick: () => setOpen(false) }, "\u0625\u0644\u063A\u0627\u0621"))); }
+function CorrectionHistory({ corrections, shipments }) { return React.createElement("div", { className: "card" },
+    React.createElement("div", { className: "cardhead" },
+        React.createElement("div", null,
+            React.createElement("h3", null, "\u0633\u062C\u0644 \u062A\u0635\u062D\u064A\u062D\u0627\u062A \u0627\u0644\u0634\u062D\u0646\u0627\u062A"),
+            React.createElement("p", null, "\u0627\u0644\u0642\u062F\u064A\u0645 \u0648\u0627\u0644\u062C\u062F\u064A\u062F \u0648\u0627\u0644\u0633\u0628\u0628 \u0643\u0645\u0627 \u0633\u062C\u0644\u0647 \u0635\u0627\u062D\u0628 \u0627\u0644\u0634\u0631\u0643\u0629"))),
+    corrections.length ? React.createElement("div", { className: "tablewrap" },
+        React.createElement("table", null,
+            React.createElement("thead", null,
+                React.createElement("tr", null,
+                    React.createElement("th", null, "\u0627\u0644\u0634\u062D\u0646\u0629"),
+                    React.createElement("th", null, "\u0642\u0628\u0644 \u0627\u0644\u062A\u0635\u062D\u064A\u062D"),
+                    React.createElement("th", null, "\u0628\u0639\u062F \u0627\u0644\u062A\u0635\u062D\u064A\u062D"),
+                    React.createElement("th", null, "\u0627\u0644\u0633\u0628\u0628"),
+                    React.createElement("th", null, "\u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0648\u0627\u0644\u0648\u0642\u062A"))),
+            React.createElement("tbody", null, corrections.map((c) => React.createElement("tr", { key: c.id },
+                React.createElement("td", null,
+                    "#",
+                    shipments.find((s) => s.id === c.shipment_id)?.tracking || c.shipment_id),
+                React.createElement("td", null,
+                    labels[c.old_status],
+                    " \u00B7 ",
+                    fmt(c.old_collected)),
+                React.createElement("td", null,
+                    labels[c.new_status],
+                    " \u00B7 ",
+                    fmt(c.new_collected)),
+                React.createElement("td", null, c.reason),
+                React.createElement("td", null, new Date(c.created).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' }))))))) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u062A\u0635\u062D\u064A\u062D\u0627\u062A \u0645\u0633\u062C\u0644\u0629", detail: "\u0623\u064A \u062A\u0635\u062D\u064A\u062D \u0645\u0633\u0645\u0648\u062D \u0647\u064A\u0638\u0647\u0631 \u0647\u0646\u0627." })); }
+function ResetPassword({ id, role, act }) { const [open, setOpen] = useState(false), [password, setPassword] = useState(''); return open ? React.createElement("div", { className: "correction-form" },
+    React.createElement("input", { type: "password", minLength: 8, value: password, onChange: e => setPassword(e.target.value), placeholder: "\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0627\u0644\u062C\u062F\u064A\u062F\u0629", autoComplete: "new-password" }),
+    React.createElement("button", { disabled: password.length < 8, onClick: () => act({ op: 'reset_password', id, role, password }, () => { setPassword(''); setOpen(false); }) }, "\u062D\u0641\u0638"),
+    React.createElement("button", { className: "subtle", onClick: () => { setPassword(''); setOpen(false); } }, "\u0625\u0644\u063A\u0627\u0621")) : React.createElement("button", { className: "subtle", onClick: () => setOpen(true) }, "\u0625\u0639\u0627\u062F\u0629 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631"); }
+function LinkAccount({ id, role, act }) { const [open, setOpen] = useState(false), [username, setUsername] = useState(''), [password, setPassword] = useState(''); return open ? React.createElement("div", { className: "correction-form" },
+    React.createElement("input", { inputMode: "numeric", value: username, onChange: e => setUsername(e.target.value), placeholder: "\u0631\u0642\u0645 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645" }),
+    React.createElement("input", { type: "password", value: password, onChange: e => setPassword(e.target.value), placeholder: "\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0627\u0644\u0645\u0624\u0642\u062A\u0629", autoComplete: "new-password" }),
+    React.createElement("small", null, "\u0664 \u0623\u0631\u0642\u0627\u0645 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u0648\u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631 \u0668 \u0623\u062D\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644."),
+    React.createElement("button", { disabled: !/^\d{4,12}$/.test(username) || password.length < 8, onClick: () => act({ op: 'provision', existingId: id, role, username, password }, () => { setPassword(''); setOpen(false); }) }, "\u062A\u0641\u0639\u064A\u0644 \u0627\u0644\u062F\u062E\u0648\u0644"),
+    React.createElement("button", { className: "subtle", onClick: () => { setPassword(''); setOpen(false); } }, "\u0625\u0644\u063A\u0627\u0621")) : React.createElement("button", { className: "subtle", onClick: () => setOpen(true) }, "\u0625\u0646\u0634\u0627\u0621 \u0631\u0642\u0645 \u062F\u062E\u0648\u0644"); }
+const snapshotSheets = [['الشركات', 'companies'], ['المناديب', 'drivers'], ['المديرون', 'staff'], ['الشحنات', 'shipments'], ['التسويات', 'payments'], ['الخزنة', 'cash_entries'], ['صلاحيات المناديب', 'driver_access'], ['سجل الشحنات', 'shipment_events'], ['إقفالات المناديب', 'daily_closures'], ['تصحيحات الشحنات', 'shipment_corrections']];
+function MigrationPanel({ act, busy }) { const [snapshot, setSnapshot] = useState(null), [message, setMessage] = useState(''); async function selectFile(e) { try {
+    let f = e.target.files?.[0];
+    if (!f)
+        return;
+    let wb = XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: false });
+    let result = {};
+    for (const [sheet, key] of snapshotSheets) {
+        if (!wb.Sheets[sheet])
+            throw Error('الملف ناقص صفحة ' + sheet + '؛ صدّر نسخة جديدة من النظام القديم');
+        let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheet], { defval: null, raw: true });
+        if (rows.length === 1 && Object.keys(rows[0]).length === 1 && rows[0]['ملاحظة'])
+            rows = [];
+        result[key] = rows;
+    }
+    setSnapshot(result);
+    setMessage('راجع الأعداد قبل النقل. الملف لا يتضمن كلمات مرور أو مواقع المناديب.');
+}
+catch (e) {
+    setSnapshot(null);
+    setMessage(e.message || 'تعذر قراءة الملف');
+} } return React.createElement("div", { className: "card" },
+    React.createElement("h3", null, "\u0646\u0642\u0644 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0646\u0633\u062E\u0629 \u0627\u0644\u0633\u0627\u0628\u0642\u0629"),
+    React.createElement("p", null, "\u0645\u0646 \u0627\u0644\u0646\u0633\u062E\u0629 \u0627\u0644\u0642\u062F\u064A\u0645\u0629 \u0627\u0641\u062A\u062D \u0627\u0644\u062E\u0632\u0646\u0629 \u0648\u0627\u0644\u062D\u0633\u0627\u0628\u0627\u062A \u0648\u0627\u062E\u062A\u0631 \u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A\u060C \u062B\u0645 \u0627\u0631\u0641\u0639 \u0645\u0644\u0641 Excel \u0647\u0646\u0627."),
+    React.createElement("div", { className: "hint" }, "\u0627\u0644\u0627\u0633\u062A\u064A\u0631\u0627\u062F \u0644\u0644\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u062C\u062F\u064A\u062F\u0629 \u0627\u0644\u0641\u0627\u0631\u063A\u0629 \u0641\u0642\u0637\u060C \u0648\u0644\u0627 \u064A\u062D\u0630\u0641 \u0623\u0648 \u064A\u063A\u064A\u0631 \u0627\u0644\u0646\u0633\u062E\u0629 \u0627\u0644\u0642\u062F\u064A\u0645\u0629. \u0628\u0639\u062F \u0627\u0644\u0646\u0642\u0644 \u0623\u0646\u0634\u0626 \u0631\u0642\u0645 \u062F\u062E\u0648\u0644 \u0644\u0643\u0644 \u0645\u062F\u064A\u0631 \u0648\u0645\u0646\u062F\u0648\u0628 \u0645\u0633\u062A\u0648\u0631\u062F. \u0631\u0627\u062C\u0639 \u0627\u0644\u0623\u0631\u0635\u062F\u0629 \u0642\u0628\u0644 \u0627\u0644\u0627\u0633\u062A\u062E\u062F\u0627\u0645 \u0627\u0644\u0641\u0639\u0644\u064A."),
+    React.createElement("label", { className: "upload" },
+        React.createElement("b", null, "\u21E7"),
+        React.createElement("strong", null, "\u0627\u062E\u062A\u0631 \u0646\u0633\u062E\u0629 \u0645\u064E\u0633\u0627\u0631 \u0627\u0644\u0642\u062F\u064A\u0645\u0629"),
+        React.createElement("input", { type: "file", accept: ".xlsx", onChange: selectFile })),
+    message && React.createElement("p", null, message),
+    snapshot && React.createElement(React.Fragment, null,
+        React.createElement("div", { className: "moneygrid" }, snapshotSheets.map(([name, key]) => React.createElement("div", { key: key },
+            React.createElement("small", null, name),
+            React.createElement("b", null, snapshot[key].length)))),
+        React.createElement("button", { disabled: busy, onClick: () => { if (confirm('تأكيد نقل السجلات إلى قاعدة مَسار الفارغة؟'))
+                act({ op: 'import_snapshot', snapshot }, () => setSnapshot(null)); } }, "\u0646\u0642\u0644 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"))); }
+// ORIGINAL: src/main.tsx
+function Entry() { const [session, setSession] = useState(null), [loading, setLoading] = useState(true), [username, setUsername] = useState(''), [password, setPassword] = useState(''), [message, setMessage] = useState(''), [busy, setBusy] = useState(false), [signup, setSignup] = useState(false); useEffect(() => { auth.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); }); const { data } = auth.auth.onAuthStateChange((_event, session) => setSession(session)); return () => data.subscription.unsubscribe(); }, []); if (loading)
+    return React.createElement("div", { className: "loading" }, "\u062C\u0627\u0631\u064A \u0627\u0644\u062A\u062D\u0645\u064A\u0644..."); if (session)
+    return React.createElement(Dashboard, { user: session.user.email || 'المستخدم' }); return React.createElement("main", { className: "login" },
+    React.createElement("div", { className: "login-card" },
+        React.createElement("div", { className: "brand" },
+            React.createElement("span", { className: "brandmark" }, "\u2197"),
+            React.createElement("div", null,
+                React.createElement("b", null, "\u0645\u064E\u0633\u0627\u0631"),
+                React.createElement("small", null, "\u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u0634\u062D\u0646 \u0648\u0627\u0644\u062A\u0648\u0635\u064A\u0644"))),
+        React.createElement("h1", null, signup ? 'إعداد حساب صاحب الشركة' : 'تسجيل الدخول'),
+        React.createElement("p", null, signup ? 'يُرسل رابط تأكيد إلى بريد صاحب الشركة المعتمد.' : 'اكتب رقم المستخدم وكلمة المرور للدخول.'),
+        React.createElement("form", { onSubmit: async (e) => { e.preventDefault(); setBusy(true); setMessage(''); try {
+                if (signup) {
+                    if (username.trim().toLowerCase() !== 'ebrahemawad22@gmail.com')
+                        throw Error('استخدم بريد صاحب الشركة المعتمد');
+                    const { error } = await auth.auth.signUp({ email: username.trim(), password, options: { emailRedirectTo: window.location.origin + '/' } });
+                    if (error)
+                        throw error;
+                    setMessage('راجع بريدك لتأكيد الحساب، ثم سجّل الدخول.');
+                }
+                else {
+                    const { error } = await auth.auth.signInWithPassword({ email: numericEmail(username), password });
+                    if (error)
+                        throw Error('رقم المستخدم أو كلمة المرور غير صحيحة');
+                }
+            }
+            catch (e) {
+                setMessage(e.message || 'تعذر تسجيل الدخول');
+            }
+            finally {
+                setBusy(false);
+            } } },
+            React.createElement("label", null,
+                signup ? 'البريد الإلكتروني' : 'رقم المستخدم أو بريد المالك',
+                React.createElement("input", { value: username, onChange: e => setUsername(e.target.value), required: true, autoComplete: "username", dir: "ltr" })),
+            React.createElement("label", null,
+                "\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631",
+                React.createElement("input", { type: "password", value: password, onChange: e => setPassword(e.target.value), required: true, minLength: 8, autoComplete: signup ? 'new-password' : 'current-password', dir: "ltr" })),
+            React.createElement("button", { disabled: busy }, signup ? 'إنشاء حساب المالك' : 'دخول')),
+        message && React.createElement("div", { className: "hint", role: "status" }, message),
+        React.createElement("button", { className: "subtle space", onClick: () => { setSignup(!signup); setMessage(''); } }, signup ? 'العودة للدخول' : 'إعداد حساب صاحب الشركة لأول مرة'))); }
+createRoot(document.getElementById('root')).render(React.createElement(Entry, null));
 
-function importView(){
-return '<div class="panel"><h2>استيراد شحنات شركة</h2><div class="flowsteps"><span class="current">اختيار الملف</span><span>مطابقة الأعمدة</span><span>معاينة الأرقام</span><span>تأكيد الاستيراد</span></div><div class="notice">كل شحنة برقم فريد داخل الشركة. تقدر تستورد ملف Excel أو CSV، مع مراجعة أولية قبل الحفظ.</div>'+
-'<div class="grid2"><div class="form-row"><label>الشركة</label><select id="import-company">'+opt('companies').map(function(x){return '<option value="'+x[0]+'">'+esc(x[1])+'</option>'}).join('')+'</select></div><div class="form-row"><label>ملف الشحنات</label><input id="import-file" type="file" accept=".xlsx,.xls,.csv"></div></div>'+
-'<div class="actions">'+button('معاينة الملف ومطابقة الأعمدة','preview-import',0,'primary')+button('تحميل نموذج Excel','download-template')+'</div><p class="mini">الحد الأقصى 300 شحنة لكل استيراد. الأسعار في الملف بالجنيه، والنظام يحفظها بالقروش لتجنب أخطاء الكسور. رسوم التوصيل تُطبّق تلقائيًا حسب الشركة.</p></div>'+
-panel('الأعمدة المطلوبة',table(['اسم العمود','المحتوى'],[['رقم الشحنة','كود فريد للشحنة داخل نفس الشركة'],['اسم العميل','اسم المستلم'],['الهاتف','رقم التواصل'],['العنوان','عنوان التوصيل بالتفصيل'],['المنتج','محتوى الطلب'],['الإجمالي','إجمالي المطلوب من المستلم بالجنيه']]))
 }
-function distributionView(){
-var sh=data('shipments'),eligible=sh.filter(function(s){return !['delivered','partial','returned_visit'].includes(s.status)}),shown=eligible.filter(function(s){return !state.company||String(s.company_id)===state.company});
-return '<div class="stats">'+stat('غير موزعة',eligible.filter(function(s){return !s.driver_id}).length)+stat('مع المناديب',eligible.filter(function(s){return !!s.driver_id}).length)+stat('المحدّد للتوزيع',state.selected.size)+stat('إجمالي المناديب',data('drivers').length)+'</div>'+
-panel('توزيع الشحنات','<div class="toolbar"><div class="filters"><select id="filter-company"><option value="">كل الشركات</option>'+data('companies').map(function(x){return '<option value="'+x.id+'" '+(state.company===String(x.id)?'selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select></div><div class="actions">'+button('توزيع المحدد لمندوب','assign',0,'primary')+button('إلغاء التحديد','clear-selection')+'</div></div><p class="mini">حدّد الشحنات ثم اختر المندوب. يمكنك إعادة توزيع الشحنة قبل إقفالها، والشحنات المنتهية لا يمكن إعادة توزيعها من هنا.</p>'+
-table(['تحديد','رقم الشحنة','الشركة','المستلم','العنوان','المندوب الحالي','الحالة'],shown.slice(0,500).map(function(s){return ['<input type="checkbox" class="check select-shipment" data-id="'+s.id+'" '+(state.selected.has(s.id)?'checked':'')+'>',esc(s.tracking),esc(byId('companies',s.company_id)?.name||''),esc(s.customer),esc(s.address),esc(byId('drivers',s.driver_id)?.name||'لم يوزّع'),pill(s.status)]})))
-}
-function trackingView(){
-var rows=data('shipmentEvents').filter(function(e){var s=byId('shipments',e.shipment_id),q=state.search.toLowerCase();return !q||[s?.tracking,s?.customer,s?.phone,e.note].join(' ').toLowerCase().includes(q)});
-return panel('سجل حالات الشحنات','<div class="toolbar"><input id="search" placeholder="بحث برقم الشحنة أو العميل" value="'+esc(state.search)+'">'+button('تصدير حالات الشحنات','export-events',0,'soft')+'</div><p class="mini">سجل حركات الشحنات الداخلي. يظهر كل تحديث كحدث منفصل؛ أما تقرير الشركة فيظهر كل شحنة مرة واحدة فقط بأحدث حالة.</p>'+table(['الشحنة','العميل','الشركة','المندوب','الحالة','ملاحظات','الوقت'],rows.slice(0,400).map(function(e){var s=byId('shipments',e.shipment_id)||{};return [esc(s.tracking||e.shipment_id),esc(s.customer),esc(byId('companies',s.company_id)?.name||''),esc(byId('drivers',e.driver_id)?.name||'—'),pill(e.status),esc(e.note),esc(dt(e.created))]})))
-}
-function dailyData(driverId,date){
-var sh=data('shipments').filter(function(s){return ['delivered','partial','returned_visit'].includes(s.status)&&s.delivered&&(!driverId||Number(s.driver_id)===Number(driverId))});
-var payments=data('payments').filter(function(p){return p.type==='driver'&&(!driverId||Number(p.party_id)===Number(driverId))});
-var before=sh.filter(function(s){return day(s.delivered)<date}),current=sh.filter(function(s){return day(s.delivered)===date}),olderPay=payments.filter(function(p){return day(p.created)<date}),todayPay=payments.filter(function(p){return day(p.created)===date});
-var opening=sum(before,driverDue)-sum(olderPay,function(p){return p.amount}),accrued=sum(current,driverDue),paid=sum(todayPay,function(p){return p.amount});
-return {opening:opening,accrued:accrued,paid:paid,closing:opening+accrued-paid,ships:current,received:sum(current,function(s){return s.collected}),driverFee:sum(current,function(s){return s.driver_fee}),delivery:sum(current,function(s){return s.delivery})};
-}
-function dailyView(){
-var today=state.date||day(new Date()),d=state.driverId,calc=dailyData(d,today),drivers=opt('drivers');
-return '<div class="panel"><div class="toolbar"><h2>حساب يومي تفصيلي</h2><div class="filters"><input type="date" id="report-from" value="'+esc(today)+'"><select id="daily-driver"><option value="">كل المناديب</option>'+drivers.map(function(x){return '<option value="'+x[0]+'" '+(String(d)===String(x[0])?'selected':'')+'>'+esc(x[1])+'</option>'}).join('')+'</select></div><div class="actions">'+button('تصدير الحساب اليومي','export-daily',0,'soft')+button('إقفال يوم مندوب','close-day',0,'primary')+'</div></div><p class="mini">الأرقام حسب تاريخ التسليم الفعلي وتاريخ التحصيل بتوقيت القاهرة. الرصيد الافتتاحي = مستحقات الأيام السابقة ناقص ما تم توريده قبل التاريخ المختار.</p></div>'+
-'<div class="stats">'+stat('رصيد مرحّل من قبل',money(calc.opening))+stat('مستحق اليوم',money(calc.accrued))+stat('المورّد اليوم',money(calc.paid))+stat('رصيد آخر اليوم',money(calc.closing))+'</div>'+
-'<div class="stats">'+stat('المحصل من العملاء',money(calc.received))+stat('إجمالي رسوم التوصيل',money(calc.delivery))+stat('نصيب المناديب',money(calc.driverFee))+stat('دخل التوصيل قبل المصاريف',money(calc.delivery-calc.driverFee))+'</div>'+
-panel('شحنات اليوم المكتملة',table(['الشحنة','الشركة','المندوب','الحالة','المحصل','رسوم التوصيل','نصيب المندوب','على المندوب'],calc.ships.map(function(s){return [esc(s.tracking),esc(byId('companies',s.company_id)?.name||''),esc(byId('drivers',s.driver_id)?.name||''),pill(s.status),money(s.collected),money(s.delivery),money(s.driver_fee),money(driverDue(s))]})))+
-panel('حساب كل مندوب حتى التاريخ المحدد',table(['المندوب','مرحّل','مستحق اليوم','توريد اليوم','متبقي'],drivers.map(function(row){var c=dailyData(row[0],today);return [esc(row[1]),money(c.opening),money(c.accrued),money(c.paid),'<b>'+money(c.closing)+'</b>']})))
-}
-function driverMonitorView(){
-var sh=data('shipments'),ev=data('shipmentEvents'),today=day(new Date());
-var rows=data('drivers').map(function(d){var items=sh.filter(function(s){return Number(s.driver_id)===Number(d.id)}),last=ev.filter(function(e){return Number(e.driver_id)===Number(d.id)}).sort(function(a,b){return new Date(b.created)-new Date(a.created)})[0],loc=data('locations').find(function(x){return Number(x.driver_id)===Number(d.id)});var fresh=loc&&loc.active&&(Date.now()-new Date(loc.updated).getTime()<300000);return [esc(d.name),String(items.filter(function(s){return s.status==='transit'}).length),String(items.filter(function(s){return s.status==='delivered'&&day(s.delivered)===today}).length),String(items.filter(function(s){return s.status==='postponed'}).length),String(items.filter(function(s){return s.status==='returned'||s.status==='returned_visit'}).length),money(balance('driver',d.id)),esc(dt(last&&last.created)),loc?(fresh?'<span class="pill ok">موقع حديث</span>':'<span class="pill warn">موقع قديم/متوقف</span>'):'لا يشارك الموقع']});
-return panel('المراقبة اليومية للمناديب','<div class="toolbar"><p class="mini">عدد الشحنات والحالات وآخر تحديث والمبالغ المستحقة للمندوب.</p><div class="actions">'+button('خريطة المناديب','navigate-locations',0,'soft')+button('تحديث','reload')+'</div></div>'+table(['المندوب','قيد التوصيل','تم التسليم اليوم','مؤجلة','مرتجعة','الرصيد','آخر حركة','الموقع'],rows))
-}
-
-function shipmentVisible(){return data('shipments').filter(function(s){var q=state.search.toLowerCase();return (!q||[s.tracking,s.customer,s.phone,s.address,s.product].join(' ').toLowerCase().includes(q))&&(!state.company||String(s.company_id)===state.company)&&(!state.status||s.status===state.status)})}
-function shipmentsView(){var editable=can('shipments',true),c=data('companies'),d=data('drivers'),s=shipmentVisible();var filter='<div class="toolbar"><div class="filters"><input id="search" placeholder="بحث بالكود أو اسم العميل أو الهاتف" value="'+esc(state.search)+'"><select id="filter-company"><option value="">كل الشركات</option>'+c.map(function(x){return '<option value="'+x.id+'" '+(state.company===String(x.id)?'selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select><select id="filter-status"><option value="">كل الحالات</option>'+Object.keys(statuses).map(function(x){return '<option value="'+x+'" '+(state.status===x?'selected':'')+'>'+statuses[x]+'</option>'}).join('')+'</select></div><div class="actions">'+(editable?button('استيراد Excel','import',0,'primary')+button('تعيين المحدد لمندوب','assign',0,'soft'):'')+button('تصدير المعروض','export-shipments')+'</div></div>';
-var rows=s.slice(0,500).map(function(x){return [editable?'<input type="checkbox" class="check select-shipment" data-id="'+x.id+'" '+(state.selected.has(x.id)?'checked':'')+'>':'—','<b>'+esc(x.tracking)+'</b>',esc(x.customer),esc(byId('companies',x.company_id)?.name||'—'),esc(byId('drivers',x.driver_id)?.name||'—'),pill(x.status),money(x.total),money(x.collected),'<span class="actions">'+(editable?button('تحديث الحالة','status',x.id):'')+'</span>']});
-return panel('الشحنات ('+s.length+')',filter+table(['تحديد','رقم الشحنة','العميل','الشركة','المندوب','الحالة','المطلوب','المحصّل','إجراء'],rows)+(s.length>500?'<p class="fine">معروض أول 500 شحنة. استخدم البحث للوصول لشحنة معينة.</p>':''))}
-function companiesView(){var x=data('companies'),canEdit=can('companies',true);return panel('الشركات المتعاقدة','<div class="toolbar"><span class="fine">إعدادات التوصيل ونسبة المندوب لكل شركة</span>'+(canEdit?button('إضافة شركة','company',0,'primary'):'')+'</div>'+table(['الشركة','التليفون','رسوم التوصيل','نصيب المندوب','تسليم جزئي','إجراء'],x.map(function(c){return ['<b>'+esc(c.name)+'</b>',esc(c.phone),money(c.delivery),money(c.driver_fee),c.allow_partial?'مسموح':'غير مسموح',canEdit?button('تعديل','company',c.id):'—']})))}
-function driverDue(s){return ['delivered','partial','returned_visit'].includes(s.status)?(Number(s.collected||0)-Number(s.driver_fee||0)):0}
-function companyDue(s){return ['delivered','partial'].includes(s.status)?Number(s.collected||0)-Number(s.delivery||0):0}
-function balance(type,id){var due=sum(data('shipments').filter(function(x){return Number(type==='driver'?x.driver_id:x.company_id)===Number(id)}),type==='driver'?driverDue:companyDue);var paid=sum(data('payments').filter(function(p){return p.type===type&&Number(p.party_id)===Number(id)}),function(p){return p.amount});return due-paid}
-function driversView(){var canEdit=owner(),x=data('drivers');return panel('المناديب','<div class="toolbar"><span class="fine">تابع المهام والحسابات وربط رقم الدخول</span>'+(canEdit?button('إضافة مندوب بحساب دخول','provision-driver',0,'primary'):'')+'</div>'+table(['المندوب','الهاتف','رقم المستخدم','عدد الشحنات','المتبقي عليه','الإجراءات'],x.map(function(d){var n=data('shipments').filter(function(s){return Number(s.driver_id)===Number(d.id)}).length;return [esc(d.name),esc(d.phone),esc(d.username||'غير مفعل'),String(n),can('settlements')||owner()?'<b>'+money(balance('driver',d.id))+'</b>':'—',canEdit?button(d.username?'تغيير كلمة السر':'تفعيل حساب','driver-credential',d.id)+button('صلاحيات المندوب','driver-access',d.id):'—']})))}
-function settlementsView(){var d=data('drivers'),c=data('companies'),p=data('payments'),closures=data('closures'),canEdit=can('settlements',true);
-return '<div class="stats">'+stat('المستحق على المناديب',money(sum(d,function(x){return balance('driver',x.id)})))+stat('المستحق للشركات',money(sum(c,function(x){return balance('company',x.id)})))+stat('تحصيل المناديب',money(sum(p.filter(function(x){return x.type==='driver'}),function(x){return x.amount})))+stat('مدفوع للشركات',money(sum(p.filter(function(x){return x.type==='company'}),function(x){return x.amount})))+'</div>'+panel('رصيد كل مندوب','<div class="toolbar">'+(canEdit?button('استلام مبلغ','payment',0,'primary')+button('إقفال يوم مندوب','close-day',0,'soft'):'')+'</div>'+table(['المندوب','الرصيد المطلوب','إجراء'],d.map(function(x){return [esc(x.name),money(balance('driver',x.id)),canEdit?button('تحصيل','payment-driver',x.id):'—']})))+panel('مستحقات الشركات','<div class="toolbar">'+(canEdit?button('صرف لشركة','payment-company',0,'soft'):'')+'</div>'+table(['الشركة','الرصيد المطلوب','إجراء'],c.map(function(x){return [esc(x.name),money(balance('company',x.id)),canEdit?button('صرف','payment-company',x.id):'—']})))+panel('عمليات التحصيل والصرف',table(['النوع','الحساب','القيمة','البيان','التاريخ'],p.slice(0,100).map(function(x){return [x.type==='driver'?'تحصيل من مندوب':'دفع لشركة',esc(byId(x.type==='driver'?'drivers':'companies',x.party_id)?.name||'—'),money(x.amount),esc(x.note),esc(dt(x.created))]})))+panel('إقفالات المناديب',table(['المندوب','اليوم','المطلوب','المسدّد','المتبقي','الحالة','إجراء'],closures.map(function(x){return [esc(byId('drivers',x.driver_id)?.name||''),esc(x.day),money(x.expected),money(x.paid),money(x.remaining),x.reopened_at?'أعيد فتحه':'مقفل',owner()&&!x.reopened_at?button('إعادة فتح','reopen-day',x.id):'—']})))}
-function accountsView(){
-var p=data('payments'),e=data('cashEntries'),capital=sum(e.filter(function(x){return x.type==='capital'}),function(x){return x.amount}),incomes=sum(e.filter(function(x){return x.type==='income'}),function(x){return x.amount}),expenses=sum(e.filter(function(x){return x.type==='expense'}),function(x){return x.amount}),received=sum(p.filter(function(x){return x.type==='driver'}),function(x){return x.amount}),paid=sum(p.filter(function(x){return x.type==='company'}),function(x){return x.amount}),amount=capital+incomes+received-expenses-paid;
-var movements=e.map(function(x){return {date:x.created,type:x.type==='capital'?'رأس مال':x.type==='expense'?'مصروف':'إيراد آخر',name:x.note,delta:x.type==='expense'?-Number(x.amount):Number(x.amount)}}).concat(p.map(function(x){return {date:x.created,type:x.type==='driver'?'توريد مندوب':'صرف لشركة',name:byId(x.type==='driver'?'drivers':'companies',x.party_id)?.name||x.note,delta:x.type==='driver'?Number(x.amount):-Number(x.amount)}})).sort(function(a,b){return new Date(b.date)-new Date(a.date)});
-return '<div class="stats">'+stat('رصيد الخزنة',money(amount))+stat('رأس المال المضاف',money(capital))+stat('توريدات المناديب',money(received))+stat('المدفوع للشركات',money(paid))+'</div><div class="stats">'+stat('الإيرادات الأخرى',money(incomes))+stat('المصروفات',money(expenses))+stat('مستحقات الشركات غير المسددة',money(sum(data('companies'),function(x){return balance('company',x.id)})))+stat('مبالغ لدى المناديب',money(sum(data('drivers'),function(x){return balance('driver',x.id)})))+'</div>'+
-panel('دفتر حركة الخزنة','<div class="toolbar"><span class="mini">الرصيد ناتج عن القيود المضافة والتوريدات والمدفوعات المسجلة، ولا يشمل فلوسًا ما زالت مع المناديب.</span>'+(can('accounts',true)?button('تسجيل حركة مالية','cash',0,'primary'):'')+'</div>'+table(['النوع','البيان','داخل الخزنة','خارج الخزنة','التاريخ'],movements.map(function(x){return [esc(x.type),esc(x.name),x.delta>0?money(x.delta):'—',x.delta<0?money(-x.delta):'—',esc(dt(x.date))]})))
-}
-function companyRows(company,from,to){return data('shipments').filter(function(s){return (!company||String(s.company_id)===String(company))&&(!from||day(s.created)>=from)&&(!to||day(s.created)<=to)})}
-function reportsView(){var c=data('companies');var sh=companyRows(state.company,state.date,'');return panel('تقرير شركات الشحن','<div class="notice">التقرير الخارجي لا يحتوي على بيانات داخلية مثل تاريخ إضافة الشحنة للنظام، أو حسابات المندوبين وأرباح الشركة.</div><div class="toolbar"><div class="filters"><select id="filter-company"><option value="">كل الشركات</option>'+c.map(function(x){return '<option value="'+x.id+'" '+(state.company===String(x.id)?'selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select><input id="report-from" type="date" value="'+esc(state.date)+'"></div><div class="actions">'+button('Excel تقرير الشركات','export-company',0,'primary')+button('Excel تقرير داخلي','export-internal')+'</div></div>'+table(['الشركة','رقم الشحنة','العميل','الحالة','المبلغ المحصّل','مستحق الشركة'],sh.slice(0,200).map(function(s){return [esc(byId('companies',s.company_id)?.name||''),esc(s.tracking),esc(s.customer),pill(s.status),money(s.collected),money(companyDue(s))]})))}
-function locationsView(){var active=data('locations').filter(function(l){return Number(l.active)===1}),total=data('drivers').length;return panel('متابعة مواقع المناديب','<div class="notice">الموقع بيظهر فقط لما المندوب يوافق ويضغط «بدء مشاركة موقعي» من جهازه. المكان قد يتوقف تحديثه لو الموبايل أغلق الصفحة.</div><div class="stats">'+stat('عدد المناديب',total)+stat('شاركوا الموقع',active.length)+'</div><div id="map" class="map"></div><div style="height:14px"></div>'+table(['المندوب','آخر تحديث','الدقة','فتح الموقع'],data('locations').map(function(x){var d=byId('drivers',x.driver_id),age=(Date.now()-new Date(x.updated).getTime())/60000,fresh=x.active&&age<5;var lat=Number(x.latitude),lon=Number(x.longitude);return [esc(d&&d.name||x.driver_id),'<span class="pill '+(fresh?'ok':'warn')+'">'+(fresh?'حديث':'متوقف أو قديم')+'</span> '+esc(dt(x.updated)),x.accuracy==null?'—':Math.round(x.accuracy)+' متر','<a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'#map=16/'+lat+'/'+lon+'">الخريطة</a>']})))}
-function paintMap(){if(!window.L)return;var el=document.getElementById('map');if(!el)return;try{if(state.map){state.map.remove();state.map=null}var locs=data('locations').filter(function(x){return Number(x.active)===1&&Number.isFinite(Number(x.latitude))&&Number.isFinite(Number(x.longitude))});var map=L.map(el).setView([26.5,30.5],5);state.map=map;L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map);var points=[];locs.forEach(function(x){var ll=[Number(x.latitude),Number(x.longitude)],d=byId('drivers',x.driver_id);L.marker(ll).addTo(map).bindPopup(esc(d&&d.name||'مندوب')+' — '+esc(dt(x.updated)));points.push(ll)});if(points.length)map.fitBounds(points,{padding:[40,40],maxZoom:15});setTimeout(function(){map.invalidateSize()},300)}catch(e){console.warn(e)}}
-function usersView(){var users=data('users');return panel('المستخدمون والموظفون','<div class="toolbar"><span class="fine">إضافة الموظف برقمه وكلمة مرور وتحديد صلاحيات كل قسم</span>'+button('إضافة موظف','provision-manager',0,'primary')+'</div>'+table(['الاسم','رقم المستخدم','الحالة','الصلاحيات','إجراء'],users.map(function(u){var p=u.permissions;try{p=typeof p==='string'?JSON.parse(p):p}catch(e){p={}}var granted=A.filter(function(k){return p&&p[k]&&p[k].view}).map(function(k){return areaNames[k]});return [esc(u.name),esc(u.username||'—'),u.active?'مفعّل':'معطّل',esc(granted.join('، ')||'لا توجد'),button('تعديل','staff',u.id)+button('كلمة السر','password-manager',u.id)]})))}
-function backupView(){return panel('نقل البيانات القديمة','<div class="notice">الاستيراد هنا خاص بملف النسخة الاحتياطية بصيغة JSON الصادر من نسخة مسار القديمة، وليس ملف شحنات Excel. العملية لا تكتب فوق بيانات قائمة.</div><input type="file" id="snapshot-file" accept=".json,application/json"><p class="fine">لن تُحذف البيانات الحالية. السيرفر يرفض نقل نسخة لقاعدة غير فارغة.</p>'+button('استيراد النسخة','import-snapshot',0,'primary'))}
-function driverView(){
-var s=data('shipments'),p=data('payments'),a=state.data.driverAccess||{},fin=a.account!==false,canStatus=a.status!==false,today=day(new Date()),completed=s.filter(function(x){return x.delivered&&day(x.delivered)===today}),balanceDue=sum(s,driverDue)-sum(p,function(x){return x.amount});
-return '<div class="stats">'+stat('شحناتي',s.length)+stat('تم التسليم اليوم',completed.filter(function(x){return x.status==='delivered'}).length)+stat('قيد التوصيل',s.filter(function(x){return x.status==='transit'}).length)+(fin?stat('رصيدي المطلوب',money(balanceDue)):stat('البيانات المالية','غير متاحة'))+'</div>'+
-panel('مشاركة الموقع','<div class="toolbar"><span class="mini">مشاركة اختيارية أثناء فتح الصفحة؛ يمكنك إيقافها في أي وقت.</span><div class="actions">'+(state.watch==null?button('بدء مشاركة موقعي','location-start',0,'primary'):button('إيقاف مشاركة موقعي','location-stop',0,'danger'))+'</div></div>')+
-(fin?panel('حسابي اليومي','<div class="summaryrow"><div>المحصّل اليوم من العملاء<b>'+money(sum(completed,function(x){return x.collected}))+'</b></div><div>مستحق توريده اليوم<b>'+money(sum(completed,driverDue))+'</b></div><div>إجمالي توريد اليوم<b>'+money(sum(p.filter(function(x){return day(x.created)===today}),function(x){return x.amount}))+'</b></div><div>الرصيد المستمر<b>'+money(balanceDue)+'</b></div></div>'):'')+
-panel('الشحنات المسندة لي',table(['الكود','العميل','الهاتف','العنوان','المطلوب','الحالة','إجراء'],s.map(function(x){return [esc(x.tracking),esc(x.customer),'<a href="tel:'+esc(x.phone)+'">'+esc(x.phone)+'</a>',esc(x.address),money(x.total),pill(x.status),canStatus?button('تحديث','status',x.id):'—']})))+
-(fin?panel('توريداتي',table(['المبلغ','البيان','التاريخ'],p.map(function(x){return [money(x.amount),esc(x.note),esc(dt(x.created))]}))):'')
-}
-function f(name,label,type,val,other){return '<div class="form-row"><label>'+esc(label)+'</label><input name="'+esc(name)+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'" '+(other||'')+'></div>'}
-function sel(name,label,values,chosen){return '<div class="form-row"><label>'+esc(label)+'</label><select name="'+esc(name)+'">'+values.map(function(x){return '<option value="'+esc(x[0])+'" '+(String(x[0])===String(chosen)?'selected':'')+'>'+esc(x[1])+'</option>'}).join('')+'</select></div>'}
-function opt(k){return data(k).map(function(x){return [x.id,x.name]})}
-function openModal(title,html,onSave){var shell=document.createElement('div');shell.className='overlay';shell.innerHTML='<form class="modal"><h2>'+esc(title)+'</h2>'+html+'<div class="footer"><button class="btn primary" type="submit">حفظ وتنفيذ</button><button class="btn" type="button" data-close>إلغاء</button></div></form>';document.body.appendChild(shell);shell.addEventListener('click',function(e){if(e.target===shell||e.target.closest('[data-close]'))shell.remove()});shell.querySelector('form').addEventListener('submit',async function(e){e.preventDefault();var btn=shell.querySelector('button[type="submit"]');btn.disabled=true;try{await onSave(new FormData(e.target),e.target);shell.remove();await load(true);toast('تم الحفظ بنجاح')}catch(ex){toast(errText(ex),true);btn.disabled=false}})}
-function read(m,k){return (m.get(k)||'').toString().trim()}
-function handleCompany(id){var x=byId('companies',id)||{},html='<div class="cols">'+f('name','اسم الشركة','text',x.name,'required')+f('phone','الهاتف','tel',x.phone)+f('delivery','رسوم التوصيل بالجنيه','number',x.id?x.delivery/100:0,'min="0" step="0.01" required')+f('fee','نصيب المندوب بالجنيه','number',x.id?x.driver_fee/100:0,'min="0" step="0.01" required')+'</div><label><input class="check" name="allow" type="checkbox" '+(x.allow_partial?'checked':'')+'> السماح بالتسليم الجزئي</label>';openModal(x.id?'تعديل شركة':'إضافة شركة',html,function(m){return call('company',{id:x.id||undefined,name:read(m,'name'),phone:read(m,'phone'),delivery:egp(read(m,'delivery')),fee:egp(read(m,'fee')),allowPartial:m.has('allow')})})}
-function handleStatus(id){var s=(role()==='driver'?data('shipments').find(function(x){return x.id===id}):byId('shipments',id));if(!s)return;var vals=['transit','delivered','partial','postponed','returned','returned_visit'].map(function(x){return [x,statuses[x]]});openModal('حالة الشحنة '+s.tracking,sel('status','الحالة الجديدة',vals,s.status)+f('collected','المبلغ المحصّل للتسليم الجزئي بالجنيه','number','','min="0" step="0.01"')+f('notes','ملاحظات','text',s.notes),function(m){return call('status',{id:id,status:read(m,'status'),collected:egp(read(m,'collected')),notes:read(m,'notes')})})}
-function perms(p){p=p||{};return '<div class="panel"><h2>الصلاحيات</h2>'+A.map(function(k){return '<div class="perm"><b>'+areaNames[k]+'</b><label><input class="check" type="checkbox" name="v_'+k+'" '+(p[k]&&p[k].view?'checked':'')+'> عرض</label><label><input class="check" type="checkbox" name="e_'+k+'" '+(p[k]&&p[k].edit?'checked':'')+'> تعديل</label></div>'}).join('')+'</div>'}
-function parsePerms(m){var p={};A.forEach(function(k){p[k]={view:m.has('v_'+k),edit:m.has('e_'+k)}});return p}
-function provision(roleName,existingId){var driver=roleName==='driver',record=existingId?byId(driver?'drivers':'users',existingId):null;var title=(driver?'حساب مندوب':'حساب موظف');var html=(record?'<p class="notice">ربط حساب جديد بالمستخدم الموجود: '+esc(record.name)+'</p>':f('name','الاسم','text','','required'))+(driver&&!record?f('phone','الهاتف','tel',''):'')+f('username','رقم المستخدم (4-12 رقم)','text','','pattern="[0-9]{4,12}" required')+f('password','كلمة المرور (8 أحرف على الأقل)','password','','minlength="8" required')+(driver?'':perms());openModal('إضافة '+title,html,function(m){return call('provision',{role:roleName,existingId:existingId||undefined,name:record&&record.name||read(m,'name'),phone:read(m,'phone'),username:read(m,'username'),password:read(m,'password'),permissions:driver?{}:parsePerms(m)})})}
-function handleStaff(id){var x=byId('users',id);if(!x)return;var p=x.permissions;try{p=typeof p==='string'?JSON.parse(p):p}catch(e){p={}}openModal('تعديل الموظف',f('name','الاسم','text',x.name,'required')+'<label><input name="active" class="check" type="checkbox" '+(x.active?'checked':'')+'> الحساب مفعّل</label>'+perms(p),function(m){return call('staff',{id:id,name:read(m,'name'),active:m.has('active'),permissions:parsePerms(m)})})}
-function handlePassword(id,kind){openModal('تغيير كلمة المرور',f('password','كلمة مرور جديدة لا تقل عن 8 أحرف','password','','minlength="8" required'),function(m){return call('reset_password',{id:id,role:kind,password:read(m,'password')})})}
-function driverAccess(id){var x=data('driverPermissions').find(function(x){return Number(x.driver_id)===Number(id)})||{};openModal('صلاحيات بوابة المندوب','<label><input class="check" name="account" type="checkbox" '+(x.account!==0?'checked':'')+'> عرض الرصيد والتحصيلات</label><div style="height:12px"></div><label><input class="check" name="status" type="checkbox" '+(x.status!==0?'checked':'')+'> السماح بتحديث حالات الشحنات</label>',function(m){return call('driver_access',{id:id,account:m.has('account'),status:m.has('status')})})}
-function payment(type,id){var options=opt(type==='driver'?'drivers':'companies');if(!options.length){toast('أضف حسابًا أولًا',true);return}openModal(type==='driver'?'تحصيل من مندوب':'صرف لشركة',sel('partyId','الحساب',options,id||options[0][0])+f('amount','المبلغ بالجنيه','number','','min="0.01" step="0.01" required')+f('note','بيان العملية','text',''),function(m){return call('payment',{type:type,partyId:Number(read(m,'partyId')),amount:egp(read(m,'amount')),note:read(m,'note')})})}
-function closeDay(){if(!data('drivers').length){toast('لا يوجد مناديب',true);return}openModal('إقفال يوم مندوب',sel('driverId','المندوب',opt('drivers'))+f('amount','المبلغ المستلم بالجنيه','number','','min="0" step="0.01" required')+'<div class="hint">الإقفال يحسب المتبقي تلقائيًا من كل معاملات المندوب حتى اليوم.</div>',function(m){return call('close_day',{driverId:Number(read(m,'driverId')),amount:egp(read(m,'amount'))})})}
-function cash(){openModal('حركة الخزنة',sel('type','نوع الحركة',[['capital','رأس مال'],['income','إيراد'],['expense','مصروف']])+f('amount','المبلغ بالجنيه','number','','min="0.01" step="0.01" required')+f('note','سبب الحركة','text','','required'),function(m){return call('cash',{type:read(m,'type'),amount:egp(read(m,'amount')),note:read(m,'note')})})}
-async function previewImport(){
-var file=document.getElementById('import-file')?.files[0],companyId=Number(document.getElementById('import-company')?.value);if(!file||!companyId)throw Error('اختار الشركة وملف Excel الأول');if(!window.XLSX)throw Error('مكتبة Excel غير متاحة حاليًا');
-var wb=XLSX.read(await file.arrayBuffer(),{type:'array'}),raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
-if(raw.length<2)throw Error('الملف لا يحتوي على بيانات');var heads=raw[0].map(function(v){return String(v).trim()}),list=raw.slice(1).filter(function(r){return r.some(function(c){return String(c).trim()})});
-if(!list.length||list.length>300)throw Error('الملف يجب أن يحتوي على من 1 إلى 300 شحنة');
-var names={tracking:['tracking','awb','رقمالشحنة','كودالشحنة','رقمالبوليصة'],customer:['customer','name','العميل','اسمالعميل','المستلم'],phone:['phone','mobile','telephone','الهاتف','الموبايل','تليفون'],address:['address','العنوان','العنوانبالتفصيل'],product:['product','item','المنتج','الصنف','الطلب'],total:['total','amount','price','الإجمالي','الاجمالي','المبلغ','قيمةالاوردر']};
-var normal=function(s){return String(s).toLowerCase().replace(/[\s_-]/g,'')},map={};
-Object.keys(names).forEach(function(k){map[k]=heads.findIndex(function(h){return names[k].includes(normal(h))})});
-var fields={tracking:'رقم الشحنة',customer:'اسم العميل',phone:'الهاتف',address:'العنوان',product:'المنتج',total:'الإجمالي بالجنيه'};
-var selector=Object.keys(fields).map(function(k){return sel('map_'+k,fields[k],[['-1','اختر العمود']].concat(heads.map(function(v,i){return [i,v||'عمود '+(i+1)]})),map[k])}).join('');
-var first=table(heads.slice(0,10),list.slice(0,6).map(function(r){return heads.slice(0,10).map(function(h,i){return esc(r[i])})}));
-openModal('معاينة '+list.length+' شحنة قبل الاستيراد','<div class="notice">الملف: '+esc(file.name)+'، الشركة: '+esc(byId('companies',companyId)?.name||'')+'، عدد الصفوف: '+list.length+'</div><h3>طابق الأعمدة</h3><div class="cols">'+selector+'</div><h3>أول 6 صفوف من الملف</h3>'+first+'<div class="alert">سيتم رفض أي رقم شحنة مكرر في الملف أو مسجل قبل ذلك لنفس الشركة.</div>',async function(m){
-var indexes={};Object.keys(fields).forEach(function(k){indexes[k]=Number(read(m,'map_'+k));if(indexes[k]<0||!Number.isInteger(indexes[k]))throw Error('طابق كل الأعمدة المطلوبة')});
-if(new Set(Object.values(indexes)).size!==6)throw Error('لازم كل حقل يطابق عمودًا مختلفًا');
-var rows=list.map(function(r){var x={};Object.keys(fields).forEach(function(k){x[k]=String(r[indexes[k]]==null?'':r[indexes[k]]).trim()});x.total=egp(x.total.replace(/,/g,''));return x});
-var missing=rows.find(function(x){return !x.tracking||!x.customer||!x.phone||!x.address||!x.product||!Number.isSafeInteger(x.total)||x.total<0});if(missing)throw Error('في بيانات ناقصة أو مبلغ غير صالح: '+(missing.tracking||'صف غير معروف'));
-var unique=new Set();for(var row of rows){if(unique.has(row.tracking))throw Error('رقم الشحنة مكرر في الملف: '+row.tracking);unique.add(row.tracking)}
-var existing=new Set(data('shipments').filter(function(x){return Number(x.company_id)===companyId}).map(function(x){return x.tracking}));for(var row of rows){if(existing.has(row.tracking))throw Error('رقم شحنة موجود مسبقًا: '+row.tracking)}
-var company=byId('companies',companyId);if(rows.some(function(x){return x.total<company.delivery}))throw Error('بعض المبالغ أقل من رسوم توصيل الشركة');
-if(!confirm('تأكيد استيراد '+rows.length+' شحنة لشركة '+company.name+'؟'))throw Error('تم إلغاء الاستيراد');
-await call('import',{companyId:companyId,rows:rows});state.tab='shipments';state.company=String(companyId)
-});
-}
-function importDialog(){state.tab='import';draw()}
-
-function exportRows(name,head,rows){if(!window.XLSX){toast('تعذر تحميل مكتبة Excel',true);return}var workbook=XLSX.utils.book_new(),sheet=XLSX.utils.aoa_to_sheet([head].concat(rows));sheet['!cols']=head.map(function(){return {wch:23}});XLSX.utils.book_append_sheet(workbook,sheet,'Masar');XLSX.writeFile(workbook,name+'.xlsx')}
-function exportShipments(){var x=shipmentVisible();exportRows('Masar_Shipments_'+new Date().toISOString().slice(0,10),['الشركة','رقم الشحنة','العميل','الهاتف','العنوان','المنتج','إجمالي المبلغ','رسوم التوصيل','المندوب','الحالة','المحصّل','التاريخ'],x.map(function(s){return [byId('companies',s.company_id)?.name||'',s.tracking,s.customer,s.phone,s.address,s.product,s.total/100,s.delivery/100,byId('drivers',s.driver_id)?.name||'',statuses[s.status]||s.status,(s.collected||0)/100,day(s.created)]}))}
-function exportCompany(){var x=companyRows(state.company,state.date,'');exportRows('Masar_Company_Report_'+new Date().toISOString().slice(0,10),['اسم الشركة','رقم الشحنة','اسم المستلم','رقم الهاتف','عنوان التسليم','المنتج','الحالة','مبلغ الشحنة (جنيه)','المحصّل (جنيه)','مستحق الشركة (جنيه)'],x.map(function(s){return [byId('companies',s.company_id)?.name||'',s.tracking,s.customer,s.phone,s.address,s.product,statuses[s.status]||s.status,s.total/100,(s.collected||0)/100,companyDue(s)/100]}))}
-function exportInternal(){var x=companyRows(state.company,state.date,'');exportRows('Masar_Internal_Report_'+new Date().toISOString().slice(0,10),['الشركة','الشحنة','المندوب','الحالة','المحصّل','التوصيل','نصيب المندوب','مستحق الشركة','عمولة الشركة','تاريخ الإنجاز'],x.map(function(s){return [byId('companies',s.company_id)?.name||'',s.tracking,byId('drivers',s.driver_id)?.name||'',statuses[s.status]||s.status,(s.collected||0)/100,s.delivery/100,s.driver_fee/100,companyDue(s)/100,['delivered','partial','returned_visit'].includes(s.status)?(s.delivery-s.driver_fee)/100:0,day(s.delivered)]}))}
-async function exportEvents(){exportRows('Masar_Shipment_Events',['رقم الشحنة','الشركة','المندوب','الحالة','الملاحظة','تاريخ الحركة'],data('shipmentEvents').map(function(e){var s=byId('shipments',e.shipment_id)||{};return [s.tracking||e.shipment_id,byId('companies',s.company_id)?.name||'',byId('drivers',e.driver_id)?.name||'',statuses[e.status]||e.status,e.note,dt(e.created)]}))}
-function exportDaily(){var d=state.date||day(new Date()),ids=state.driverId?[Number(state.driverId)]:data('drivers').map(function(x){return x.id});exportRows('Masar_Daily_Account_'+d,['التاريخ','المندوب','رصيد مرحل','مستحق اليوم','توريد اليوم','المتبقي','محصل العملاء','رسوم التوصيل','نصيب المندوب'],ids.map(function(id){var c=dailyData(id,d);return [d,byId('drivers',id)?.name||'',c.opening/100,c.accrued/100,c.paid/100,c.closing/100,c.received/100,c.delivery/100,c.driverFee/100]}))}
-function startLocation(){if(!navigator.geolocation){toast('المتصفح لا يدعم تحديد المكان',true);return}if(state.watch!==null)return;var id=navigator.geolocation.watchPosition(async function(p){try{if(Date.now()-state.lastSent<25000)return;state.lastSent=Date.now();await call('location',{latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy});toast('تم تحديث موقعك')}catch(e){toast(errText(e),true)}},function(e){toast('تعذر الوصول للموقع: '+e.message,true)},{enableHighAccuracy:true,maximumAge:20000,timeout:25000});state.watch=id;draw()}
-async function stopLocation(){if(state.watch!==null)navigator.geolocation.clearWatch(state.watch);state.watch=null;state.lastSent=0;try{await call('location_stop');toast('تم إيقاف مشاركة الموقع')}catch(e){toast(errText(e),true)}draw()}
-document.addEventListener('submit',async function(e){if(e.target.id!=='login-form')return;e.preventDefault();if(!auth){toast('مكتبة تسجيل الدخول لم تحمّل',true);return}var m=new FormData(e.target),v=read(m,'login'),mail=/^[0-9]{4,12}$/.test(v)?'ebrahemawad22+masar.'+v+'@gmail.com':v;var b=e.target.querySelector('button');b.disabled=true;try{var res=await auth.auth.signInWithPassword({email:mail,password:read(m,'password')});if(res.error)throw res.error;state.session=res.data.session;await load(true)}catch(ex){toast('تعذّر تسجيل الدخول: '+errText(ex),true);b.disabled=false}});
-document.addEventListener('click',async function(e){var t=e.target.closest('[data-tab]');if(t){state.tab=t.dataset.tab;state.search='';state.selected.clear();draw();return}var b=e.target.closest('[data-act]');if(!b)return;var id=Number(b.dataset.id),act=b.dataset.act;try{
-if(act==='reload'){await load(true);toast('تم التحديث');return}if(act==='logout'){await stopLocation().catch(function(){});await auth.auth.signOut();state.session=null;state.data=null;loginView();return}
-if(act==='company')return handleCompany(id);if(act==='status')return handleStatus(id);if(act==='staff')return handleStaff(id);
-if(act==='provision-driver')return provision('driver');if(act==='provision-manager')return provision('manager');
-if(act==='driver-credential'){var d=byId('drivers',id);return d&&d.username?handlePassword(id,'driver'):provision('driver',id)}
-if(act==='password-manager')return handlePassword(id,'manager');if(act==='driver-access')return driverAccess(id);
-if(act==='payment'||act==='payment-driver')return payment('driver',id);
-if(act==='payment-company')return payment('company',id);
-if(act==='close-day')return closeDay();if(act==='cash')return cash();if(act==='import')return importDialog();if(act==='preview-import')return previewImport();if(act==='download-template')return exportRows('Masar_Import_Template',['رقم الشحنة','العميل','الهاتف','العنوان','المنتج','الإجمالي'],[['MSR-001','عميل تجريبي','01000000000','القاهرة - العنوان','منتج تجريبي',350]]);
-if(act==='assign'){var ids=Array.from(state.selected);if(!ids.length)throw Error('حدّد الشحنات أولًا');return openModal('تعيين '+ids.length+' شحنة لمندوب',sel('driverId','المندوب',opt('drivers')),async function(m){await call('assign',{ids:ids,driverId:Number(read(m,'driverId'))});state.selected.clear()})}
-if(act==='reopen-day'){return openModal('إعادة فتح يوم','<p class="alert">ستُعاد إمكانية التحديثات لليوم الحالي فقط، مع حفظ سبب إعادة الفتح.</p>'+f('reason','سبب إعادة الفتح','text','','required'),function(m){return call('reopen_day',{id:id,reason:read(m,'reason')})})}
-if(act==='export-shipments')return exportShipments();if(act==='export-events')return exportEvents();if(act==='export-daily')return exportDaily();if(act==='export-company')return exportCompany();if(act==='export-internal')return exportInternal();
-if(act==='navigate-distribution'){state.tab='distribution';draw();return}if(act==='navigate-daily'){state.tab='daily';draw();return}if(act==='navigate-reports'){state.tab='reports';draw();return}if(act==='navigate-locations'){state.tab='locations';draw();return}if(act==='clear-selection'){state.selected.clear();draw();return}if(act==='location-start')return startLocation();if(act==='location-stop')return stopLocation();
-if(act==='import-snapshot'){var file=document.getElementById('snapshot-file').files[0];if(!file)throw Error('اختر نسخة JSON');var snapshot=JSON.parse(await file.text());if(!confirm('هل تريد استيراد النسخة القديمة؟ لن يُسمح بالاستيراد على قاعدة بيانات غير فارغة.'))return;await call('import_snapshot',{snapshot:snapshot});await load(true);toast('تم نقل البيانات');return}
-}catch(ex){toast(errText(ex),true)}
-});
-document.addEventListener('input',function(e){if(e.target.id==='search'){state.search=e.target.value;var pos=e.target.selectionStart;draw();var input=document.getElementById('search');if(input){input.focus();input.setSelectionRange(pos,pos)}}});
-document.addEventListener('change',function(e){if(e.target.classList.contains('select-shipment')){var id=Number(e.target.dataset.id);if(e.target.checked)state.selected.add(id);else state.selected.delete(id)}else if(e.target.id==='filter-company'){state.company=e.target.value;draw()}else if(e.target.id==='filter-status'){state.status=e.target.value;draw()}else if(e.target.id==='report-from'){state.date=e.target.value;draw()}else if(e.target.id==='daily-driver'){state.driverId=e.target.value;draw()}});
-async function init(){if(!auth){root.textContent='تعذر تحميل أداة الدخول. تأكد من الاتصال بالإنترنت.';return}var s=await auth.auth.getSession();state.session=s.data.session;auth.auth.onAuthStateChange(function(event,session){if(event==='SIGNED_OUT'){state.session=null;state.data=null;state.watch=null;loginView()}else if(session){state.session=session}});if(state.session)await load(true);else loginView()}
-init();
-})();
-</script>
-</body></html>
+</script></body></html>
