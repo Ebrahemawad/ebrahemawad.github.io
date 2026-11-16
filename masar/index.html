@@ -120,7 +120,7 @@ function Dashboard({ user }) {
     const ss = data.shipments || [], companies = data.companies || [], drivers = data.drivers || [], payments = data.payments || [];
     const companyName = (id) => companies.find(x => x.id === id)?.name || '—', driverName = (id) => drivers.find(x => x.id === id)?.name || 'غير معين';
     let visible = ss.filter(s => (filter === 'all' || s.status === filter) && (!shipDay || (s[shipDayField] && businessDate(s[shipDayField]) === shipDay)) && [s.tracking, s.customer, s.phone, s.address].some(x => String(x || '').toLowerCase().includes(search.toLowerCase())));
-    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(actualOwner ? [['monitor', 'متابعة المناديب', '◎'], ['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
+    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧'], ['distribution', 'توزيع الشحنات', '⇄']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(actualOwner ? [['monitor', 'متابعة المناديب', '◎'], ['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
     return React.createElement("div", { className: "shell" },
         React.createElement("aside", null,
             React.createElement("div", { className: "brand" },
@@ -203,7 +203,8 @@ function Dashboard({ user }) {
                     React.createElement(DriverAccount, { driver: drivers.find(d => d.id === Number(previewDriver)), shipments: ss.filter(s => s.driver_id === Number(previewDriver)), payments: payments.filter(p => p.type === 'driver' && p.party_id === Number(previewDriver)), day: day, setDay: setDay }),
                     React.createElement("div", { className: "card space" },
                         React.createElement("h3", null, "\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
-                        React.createElement(DriverShipments, { rows: ss.filter(s => s.driver_id === Number(previewDriver)), act: act })))),
+                        React.createElement(DriverShipments, { rows: ss.filter(s => s.driver_id === Number(previewDriver)), act: act, access:{account:true,status:false} })))),
+            owner && allowed('shipments','edit') && tab === 'distribution' && React.createElement(DistributionPanel,{shipments:ss,companies:companies,drivers:drivers,act:act,busy:busy}),
             (tab === 'shipments' || (!owner && tab === 'overview' && !data.driverAccess?.account)) && React.createElement("div", { className: "card" },
                 React.createElement("div", { className: "cardhead" },
                     React.createElement("div", null,
@@ -329,7 +330,7 @@ function Dashboard({ user }) {
                             "\u0639\u0631\u0636 \u0623\u0648\u0644 \u0668 \u0635\u0641\u0648\u0641 \u0641\u0642\u0637 \u0645\u0646 \u0625\u062C\u0645\u0627\u0644\u064A ",
                             file.length)) : React.createElement(Empty, { text: "\u0645\u0644\u0641\u0643 \u0647\u064A\u0638\u0647\u0631 \u0647\u0646\u0627", detail: "\u0627\u0631\u0641\u0639 \u0645\u0644\u0641 \u0644\u0645\u0631\u0627\u062C\u0639\u0629 \u0645\u062D\u062A\u0648\u0627\u0647 \u0648\u0631\u0628\u0637 \u0627\u0644\u0623\u0639\u0645\u062F\u0629." }),
                     React.createElement("div", { className: "hint" }, "\u0642\u064A\u0645\u0629 \u0627\u0644\u0623\u0648\u0631\u062F\u0631 \u0641\u064A \u0627\u0644\u0634\u064A\u062A \u0634\u0627\u0645\u0644\u0629 \u0627\u0644\u062A\u0648\u0635\u064A\u0644. \u0633\u0639\u0631 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0648\u0646\u0635\u064A\u0628 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0628\u064A\u062A\u0633\u062C\u0644\u0648\u0627 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0642\u062A \u0627\u0644\u0627\u0633\u062A\u064A\u0631\u0627\u062F."))),
-            owner && tab === 'reports' && React.createElement(CompanyReports, { companies: companies, shipments: ss, events: data.shipmentEvents || [], day: day, setDay: setDay }),
+            owner && tab === 'reports' && React.createElement(CompanyReports, { companies: companies, shipments: ss, events: data.shipmentEvents || [], payments: payments, day: day, setDay: setDay }),
             actualOwner && tab === 'users' && React.createElement(UsersPanel, { users: staffUsers, drivers: drivers, driverPermissions: data.driverPermissions || [], busy: busy, act: act }),
             actualOwner && tab === 'accounts' && React.createElement("div", { className: "hint top-hint" },
                 React.createElement("b", null, "\u062A\u0635\u062F\u064A\u0631 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0634\u0631\u0643\u0629:"),
@@ -339,6 +340,7 @@ function Dashboard({ user }) {
             owner && tab === 'settlements' && React.createElement(React.Fragment, null,
                 React.createElement(DateSelect, { day: day, setDay: setDay }),
                 React.createElement(CompanyDaily, { shipments: ss, payments: payments, day: day }),
+                React.createElement('button',{className:'subtle',style:{marginBottom:18},onClick:()=>exportDailyExcel(drivers,ss,payments,day)},'↓ تصدير الحساب اليومي Excel'),
                 React.createElement("div", { className: "hint top-hint" }, "\u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u0631\u062D\u0651\u0644 \u064A\u0634\u0645\u0644 \u0645\u0627 \u0642\u0628\u0644 \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631. \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u0644\u0651\u0645\u0629 \u062A\u062A\u062D\u0633\u0628 \u0641\u064A \u064A\u0648\u0645 \u0627\u0644\u062A\u0633\u0644\u064A\u0645\u060C \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0641\u064A \u064A\u0648\u0645 \u062A\u0633\u062C\u064A\u0644\u0647\u0627. \u0643\u0644 \u0627\u0644\u062A\u0648\u0627\u0631\u064A\u062E \u0628\u062A\u0648\u0642\u064A\u062A \u0627\u0644\u0642\u0627\u0647\u0631\u0629. \u0645\u0628\u0627\u0644\u063A \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0645\u062D\u0633\u0648\u0628\u0629 \u0628\u0639\u062F \u062E\u0635\u0645 \u0646\u0635\u064A\u0628\u0647\u060C \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0629 \u0644\u0627 \u062A\u064F\u0633\u062C\u0651\u0644 \u0625\u0644\u0627 \u0628\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u064A\u0648\u0645."),
                 React.createElement(DailyClose, { drivers: drivers, shipments: ss, payments: payments, closures: data.closures || [], day: day, act: act, busy: busy, canEdit: allowed('settlements', 'edit'), canReopen: actualOwner }),
                 React.createElement("div", { className: "grid" },
@@ -744,17 +746,60 @@ function AccountsPanel({ entries, payments, shipments, day, setDay, act, busy, c
                     x.type === 'expense' ? '−' : '+',
                     " ",
                     fmt(x.amount)))) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u062D\u0631\u0643\u0627\u062A \u0628\u0639\u062F", detail: "\u0633\u062C\u0651\u0644 \u0631\u0623\u0633 \u0627\u0644\u0645\u0627\u0644 \u0648\u0627\u0644\u0645\u0635\u0631\u0648\u0641\u0627\u062A \u0647\u0646\u0627." })))); }
-function CompanyReports({ companies, shipments, events, day, setDay }) {
+
+function exportDailyExcel(drivers,shipments,payments,day) {
+ const sums=drivers.map(d=>{const v=dayAccount(shipments,payments,'driver',d.id,day);return {'التاريخ':day,'المندوب':d.name,'رصيد مرحل (جنيه)':v.opening/100,'مستحق اليوم (جنيه)':v.accrued/100,'توريد اليوم (جنيه)':v.settled/100,'المتبقي (جنيه)':v.closing/100,'المحصّل من العملاء (جنيه)':v.received/100,'نصيب المندوب (جنيه)':v.fees/100}});
+ const actions=drivers.flatMap(d=>{const v=dayAccount(shipments,payments,'driver',d.id,day);return v.items.map(s=>({'المندوب':d.name,'النوع':'توصيل '+s.status,'الشحنة':String(s.tracking),'العميل':s.customer,'المبلغ':driverDue(s)/100})).concat(v.payments.map(p=>({'المندوب':d.name,'النوع':'توريد للإدارة','الشحنة':'','العميل':p.note||'','المبلغ':-p.amount/100})))});
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sums.length?sums:[{'بيان':'لا يوجد مناديب'}]),'كشف المناديب');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(actions.length?actions:[{'بيان':'لا توجد حركات'}]),'حركة اليوم');XLSX.writeFile(wb,'masar-daily-'+day+'.xlsx');
+}
+function DistributionPanel({shipments,companies,drivers,act,busy}) {
+ const [q,setQ]=useState(''),[company,setCompany]=useState(''),[unassigned,setUnassigned]=useState(true),[chosen,setChosen]=useState([]),[target,setTarget]=useState('');
+ const available=shipments.filter(s=>!['delivered','partial','returned_visit'].includes(s.status)).filter(s=>(!company||Number(s.company_id)===Number(company))&&(!unassigned||!s.driver_id)&&(!q||[s.tracking,s.customer,s.phone,s.address,s.product].some(v=>String(v||'').toLowerCase().includes(q.trim().toLowerCase()))));
+ const toggle=id=>setChosen(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);
+ const all=available.length>0&&available.every(s=>chosen.includes(s.id));
+ return React.createElement(React.Fragment,null,
+ React.createElement('div',{className:'stats'},
+ React.createElement('article',null,React.createElement('span',null,'شحنات غير موزعة'),React.createElement('b',null,shipments.filter(s=>!s.driver_id&&!['delivered','partial','returned_visit'].includes(s.status)).length)),
+ React.createElement('article',null,React.createElement('span',null,'المعروضة'),React.createElement('b',null,available.length)),
+ React.createElement('article',null,React.createElement('span',null,'الشحنات المحددة'),React.createElement('b',null,chosen.length)),
+ React.createElement('article',null,React.createElement('span',null,'المناديب'),React.createElement('b',null,drivers.length))),
+ React.createElement('div',{className:'card'},
+ React.createElement('div',{className:'cardhead'},React.createElement('div',null,React.createElement('h3',null,'توزيع الشحنات على المناديب'),React.createElement('p',null,'حدد الطلبات ثم اختر المندوب. يمكنك إعادة التوزيع قبل إغلاق الشحنة.'))),
+ React.createElement('div',{className:'toolbar'},
+ React.createElement('input',{placeholder:'ابحث بالكود أو العميل أو العنوان',value:q,onChange:e=>setQ(e.target.value)}),
+ React.createElement('select',{value:company,onChange:e=>setCompany(e.target.value)},React.createElement('option',{value:''},'كل الشركات'),companies.map(c=>React.createElement('option',{key:c.id,value:c.id},c.name))),
+ React.createElement('label',{className:'checkline',style:{margin:0}},React.createElement('input',{type:'checkbox',checked:unassigned,onChange:e=>setUnassigned(e.target.checked)}),'غير موزعة فقط')),
+ React.createElement('div',{className:'assign'},
+ React.createElement('label',{className:'checkline',style:{margin:0}},React.createElement('input',{type:'checkbox',checked:all,onChange:e=>setChosen(e.target.checked?[...new Set(chosen.concat(available.map(s=>s.id)))]:chosen.filter(id=>!available.some(s=>s.id===id)))}),'تحديد الكل'),
+ React.createElement('span',null,'تم تحديد '+chosen.length+' شحنة'),
+ React.createElement('select',{value:target,onChange:e=>setTarget(e.target.value)},React.createElement('option',{value:''},'اختر المندوب'),drivers.map(d=>React.createElement('option',{key:d.id,value:d.id},d.name))),
+ React.createElement('button',{disabled:busy||!chosen.length||!target,onClick:()=>{if(!confirm('تأكيد توزيع '+chosen.length+' شحنة؟'))return;act({op:'assign',ids:chosen,driverId:Number(target)},()=>setChosen([]))}},'توزيع المحدد')),
+ React.createElement('div',{className:'tablewrap'},React.createElement('table',null,
+ React.createElement('thead',null,React.createElement('tr',null,['اختيار','رقم الشحنة','الشركة','العميل','العنوان','المندوب الحالي','الحالة'].map(t=>React.createElement('th',{key:t},t)))),
+ React.createElement('tbody',null,available.slice(0,500).map(s=>React.createElement('tr',{key:s.id},
+ React.createElement('td',null,React.createElement('input',{type:'checkbox',checked:chosen.includes(s.id),onChange:()=>toggle(s.id)})),
+ React.createElement('td',null,React.createElement('b',null,'#'+s.tracking)),
+ React.createElement('td',null,companies.find(c=>Number(c.id)===Number(s.company_id))?.name||'—'),
+ React.createElement('td',null,s.customer),React.createElement('td',null,s.address),
+ React.createElement('td',null,drivers.find(d=>Number(d.id)===Number(s.driver_id))?.name||'لم يوزع'),
+ React.createElement('td',null,React.createElement('span',{className:'badge '+s.status},labels[s.status]||s.status)))))),
+ available.length>500&&React.createElement('p',{className:'muted'},'معروض أول 500 شحنة، استخدم البحث لتضييق النتائج')
+ )));
+}
+
+function CompanyReports({ companies, shipments, events, payments=[], day, setDay }) {
     const [company, setCompany] = useState('');
     const id = Number(company), name = companies.find((c) => c.id === id)?.name || '';
     const rows = companyReport(shipments, events, id, day, businessDate(new Date()));
     const state = (value) => ({ new: 'لم يتم التسليم', transit: 'لم يتم التسليم', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة', unknown: 'الحالة غير متاحة تاريخيًا' }[value] || 'الحالة غير متاحة تاريخيًا');
     const finalized = rows.filter(e => ['delivered', 'partial', 'returned_visit'].includes(e.status)), due = finalized.reduce((t, e) => t + companyDue({ ...e.shipment, status: e.status }), 0);
+    const paid = payments.filter(p=>p.type==='company'&&Number(p.party_id)===id&&businessDate(p.created)<=day).reduce((n,p)=>n+Number(p.amount||0),0);
+    const remaining = due - paid;
     const save = () => {
         const wb = XLSX.utils.book_new();
         const intro = [{ 'اسم الشركة': name, 'الحالة حتى تاريخ': day, 'التوقيت': 'القاهرة', 'ملاحظات': 'صف واحد لكل شحنة. قيمة الشركة قبل خصم أي تسويات مدفوعة؛ محسوبة للحالات المقفولة فقط. تحصيل رفض الزيارة هو التوصيل فقط، والاستلام الجزئي بالمبلغ المسجل. بعض الحالات القديمة غير متاحة تاريخيًا. المبالغ بالجنيه.' }];
         const list = rows.map(e => ({ 'رقم الشحنة': String(e.shipment.tracking), 'حالة الشحنة': state(e.status), 'اسم العميل': String(e.shipment.customer), 'رقم التليفون': String(e.shipment.phone), 'العنوان': String(e.shipment.address), 'المنتج': String(e.shipment.product), 'قيمة الأوردر شامل التوصيل': e.shipment.total / 100, 'قيمة التوصيل': e.shipment.delivery / 100, 'التحصيل المسجل': ['delivered', 'partial', 'returned_visit'].includes(e.status) ? collected({ ...e.shipment, status: e.status }) / 100 : 'غير مسجل', 'قيمة الشركة قبل التسويات': ['delivered', 'partial', 'returned_visit'].includes(e.status) ? companyDue({ ...e.shipment, status: e.status }) / 100 : 'غير محسوب', 'ملاحظة': String(e.note || '') }));
-        const total = [{ 'عدد الشحنات': rows.length, 'عدد الحالات المقفولة': finalized.length, 'قيمة الشركة قبل التسويات للحالات المقفولة': due / 100 }];
+        const total = [{ 'عدد الشحنات': rows.length, 'عدد الحالات المقفولة': finalized.length, 'قيمة الشركة قبل التسويات للحالات المقفولة': due / 100, 'المدفوع للشركة حتى التاريخ': paid / 100, 'المتبقي للشركة حتى التاريخ': remaining / 100 }];
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(intro), 'بيانات التقرير');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(list.length ? list : [{ 'ملاحظة': 'لا توجد شحنات حتى التاريخ المختار' }]), 'الشحنات');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(total), 'الملخص');
@@ -784,6 +829,7 @@ function CompanyReports({ companies, shipments, events, day, setDay }) {
                     React.createElement("div", null,
                         React.createElement("small", null, "\u0642\u064A\u0645\u0629 \u0627\u0644\u0634\u0631\u0643\u0629 \u0642\u0628\u0644 \u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0644\u0644\u062D\u0627\u0644\u0627\u062A \u0627\u0644\u0645\u0642\u0641\u0648\u0644\u0629"),
                         React.createElement("b", null, fmt(due)))),
+                React.createElement('div',{className:'moneygrid'},React.createElement('div',null,React.createElement('small',null,'مدفوع للشركة حتى التاريخ'),React.createElement('b',null,fmt(paid))),React.createElement('div',{className:'highlight'},React.createElement('small',null,'المتبقي للشركة حتى التاريخ'),React.createElement('b',null,fmt(remaining)))),
                 React.createElement("button", { onClick: save }, "\u2193 \u062A\u0646\u0632\u064A\u0644 \u062A\u0642\u0631\u064A\u0631 Excel"),
                 rows.length ? React.createElement("div", { className: "tablewrap space" },
                     React.createElement("table", null,
