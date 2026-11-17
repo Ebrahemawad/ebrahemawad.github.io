@@ -39,10 +39,32 @@ async function check(force=false){
  }catch(e){console.warn('Masar update check unavailable:',e)}
  finally{busy=false}
 }
-function refresh(){
- const url=new URL(BASE,location.origin);
- url.searchParams.set('refresh',Date.now().toString());
- location.replace(url.toString());
+async function refresh(){
+ if(document.documentElement.dataset.masarReloading==='1')return;
+ document.documentElement.dataset.masarReloading='1';
+ const overlay=document.createElement('div');
+ overlay.id='masar-refresh-status';
+ overlay.style.cssText='position:fixed;z-index:100001;top:12px;left:50%;transform:translateX(-50%);padding:11px 18px;border-radius:24px;background:#173d86;color:white;font:700 13px Cairo,Tahoma,Arial,sans-serif;box-shadow:0 8px 28px #173d8655;pointer-events:none;';
+ overlay.textContent='جارٍ تحديث مسار...';
+ document.body.appendChild(overlay);
+ try{
+   // A stale PWA worker must not pin the Android WebView to an older HTML shell.
+   if('serviceWorker' in navigator){
+     const registrations=await navigator.serviceWorker.getRegistrations();
+     await Promise.all(registrations.filter(r=>r.scope.startsWith(location.origin+BASE)).map(r=>r.update().catch(()=>{})));
+   }
+   const fresh=await fetch(BASE+'index.html?masar_refresh='+Date.now(),{cache:'no-store',redirect:'follow'});
+   if(!fresh.ok)throw new Error('no connection');
+   const doc=await fresh.text();
+   if(!doc.includes('<title>مَسار')&&!doc.includes('function Dashboard('))throw new Error('invalid page');
+   const url=new URL(BASE,location.origin);
+   url.searchParams.set('masar_refresh',Date.now().toString());
+   window.location.assign(url.toString());
+ }catch(err){
+   overlay.textContent='تعذّر التحديث. تأكد من الإنترنت وحاول مرة أخرى.';
+   document.documentElement.dataset.masarReloading='0';
+   setTimeout(()=>overlay.remove(),3500);
+ }
 }
 window.MasarRefresh={refresh,check};
 let touchStartAt=0;
@@ -56,8 +78,8 @@ document.addEventListener('touchend',e=>{
  const old=touchStart;touchStart=null;
  const t=e.changedTouches[0];
  const dx=t.clientX-old.x,dy=t.clientY-old.y;
- if(window.scrollY>3||dy<120||Math.abs(dx)>65||Date.now()-touchStartAt>2200)return;
- if(old.target.closest('input,select,textarea,button,a,[contenteditable],.tablewrap'))return;
+ if(window.scrollY>8||dy<85||Math.abs(dx)>85||Date.now()-touchStartAt>2500)return;
+ if(old.target instanceof Element && old.target.closest('input,select,textarea,button,a,[contenteditable],.tablewrap'))return;
  refresh();
 },{passive:true});
 document.addEventListener('visibilitychange',()=>{
