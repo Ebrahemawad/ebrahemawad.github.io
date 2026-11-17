@@ -347,7 +347,7 @@ function Dashboard({ user }) {
                     React.createElement("button", { className: "subtle", title: "تحديث مسار", "aria-label": "تحديث مسار", onClick: () => window.MasarRefresh?.refresh() }, "↻ تحديث"),
                     React.createElement("span", { className: "identity-header" }, identityName + " · " + identityTitle),
                     React.createElement("span", { className: "online" }, "\u25CF \u0645\u0633\u0627\u062D\u0629 \u062E\u0627\u0635\u0629"),
-                    React.createElement("button", { className: "subtle", onClick: () => auth.auth.signOut() }, "\u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062E\u0631\u0648\u062C"))),
+                    React.createElement("button", { className: "subtle", onClick: async () => {if(window.MasarNative?.clearReminders)window.MasarNative.clearReminders();await auth.auth.signOut();} }, "\u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062E\u0631\u0648\u062C"))),
             msg && React.createElement("div", { className: "notice", role: "status" },
                 msg,
                 React.createElement("button", { onClick: () => setMsg('') }, "\u00D7")),
