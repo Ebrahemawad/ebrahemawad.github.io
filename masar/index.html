@@ -474,7 +474,7 @@ function ShipmentTable({ rows, owner, readOnly, allowCorrection, companyName, dr
             React.createElement("td", null,
                 React.createElement("span", { className: 'badge ' + s.status }, labels[s.status]),
                 s.notes && React.createElement("small", null, s.notes)),
-            React.createElement("td", null, readOnly ? React.createElement("small", null, "\u0639\u0631\u0636 \u0641\u0642\u0637") : (isFinal(s)||s.status==='returned') ? (allowCorrection&&s.status!=='returned' ? React.createElement(CorrectShipment, { s: s, act: act }) : React.createElement("small", null, "\u0645\u0642\u0641\u0648\u0644\u0629")) : React.createElement(Status, { s: s, act: act }))))))); }
+            React.createElement("td", null, readOnly ? React.createElement("small", null, "\u0639\u0631\u0636 \u0641\u0642\u0637") : (isFinal(s)||['returned','returned_unpaid'].includes(s.status)) ? (allowCorrection&&s.status!=='returned' ? React.createElement(CorrectShipment, { s: s, act: act }) : React.createElement("small", null, "\u0645\u0642\u0641\u0648\u0644\u0629")) : React.createElement(Status, { s: s, act: act }))))))); }
 function Status({ s, act }) {
     const [value, setValue] = useState(s.status === 'new' ? 'transit' : s.status);
     const [notes, setNotes] = useState(s.notes || '');
@@ -492,14 +492,18 @@ function Status({ s, act }) {
         !!s.partial_allowed && React.createElement("option", { value: "partial" }, "\u0627\u0633\u062A\u0644\u0627\u0645 \u062C\u0632\u0626\u064A"),
         React.createElement("option", { value: "postponed" }, "\u0645\u0624\u062C\u0644\u0629"),
         React.createElement("option", { value: "returned" }, "\u0631\u0641\u0636 \u0628\u0627\u0644\u062A\u0644\u064A\u0641\u0648\u0646 \u0628\u062F\u0648\u0646 \u062A\u062D\u0635\u064A\u0644"),
-        React.createElement("option", { value: "returned_visit" }, "\u0631\u0641\u0636 \u0628\u0639\u062F \u0627\u0644\u0632\u064A\u0627\u0631\u0629 - \u062A\u062D\u0635\u064A\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644")),
-    value === 'partial' && React.createElement("input", { type: "number", min: "0", step: "0.01", placeholder: "\u0627\u0644\u0645\u062D\u0635\u0651\u0644 \u0634\u0627\u0645\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644", value: amount, onChange: e => setAmount(e.target.value) }),
+        React.createElement("option", { value: "returned_visit" }, "رفض بعد الزيارة — تحصيل من العميل"),
+        React.createElement("option", { value: "returned_unpaid" }, "رفض بعد الزيارة ورفض التحصيل — الشركة تتحمل التوصيل")),
+    (value === 'partial'||value === 'returned_visit') && React.createElement("label",null,
+    value==='returned_visit'?'المبلغ المحصّل للتوصيل من العميل (ج.م)':'المبلغ المحصّل شامل التوصيل (ج.م)',
+    React.createElement("input",{type:"number",min:"0.01",step:"0.01",placeholder:"اكتب مبلغ التحصيل الفعلي",value:amount,onChange:e=>setAmount(e.target.value)})),
+    value==='returned_unpaid'&&React.createElement("div",{className:"hint"},"العميل لم يدفع شيئًا. سيُسجّل 0 كاش على المندوب، وتُضاف رسوم التوصيل كمديونية على الشركة."),
     React.createElement("input", { placeholder: "\u0645\u0644\u0627\u062D\u0638\u0629", value: notes, onChange: e => setNotes(e.target.value) }),
-    dirty ? React.createElement("button", { className: "subtle", onClick: () => { const final = ['delivered', 'partial', 'returned_visit'].includes(value); if (value === 'partial' && !amount) {
-            alert('أدخل المبلغ المحصّل شامل التوصيل');
+    dirty ? React.createElement("button", { className: "subtle", onClick: () => { const final = ['delivered', 'partial', 'returned_visit','returned_unpaid'].includes(value); if ((value === 'partial'||value === 'returned_visit') && (!amount||!Number.isSafeInteger(cents(amount))||cents(amount)<=0||(value==='returned_visit'&&cents(amount)>Number(s.delivery)))) {
+            alert(value==='returned_visit'?'اكتب مبلغ التوصيل الفعلي، أكبر من صفر ولا يتجاوز رسوم الشركة':'أدخل المبلغ المحصّل شامل التوصيل');
             return;
-        } if (final && !confirm(value === 'returned_visit' ? 'تأكيد تحصيل التوصيل فقط؟ ستُقفل الشحنة.' : value === 'partial' ? 'تأكيد المبلغ المحصّل شامل التوصيل؟ ستُقفل الشحنة.' : 'تأكيد تسليم الشحنة وتحصيل قيمتها كاملة؟ ستُقفل الشحنة.'))
-            return; act({ op: 'status', id: s.id, status: value, notes, collected: value === 'partial' ? cents(amount) : undefined }); } }, "\u062D\u0641\u0638") : React.createElement("span", { className: "saved-status", role:"status" }, s.status === 'postponed' ? 'التأجيل محفوظ ✓' : 'الحالة محفوظة ✓')); }
+        } if (final && !confirm(value === 'returned_visit' ? 'تأكيد تحصيل '+amount+' جنيه من العميل للتوصيل؟ ستُقفل الشحنة.' : value === 'returned_unpaid' ? 'تأكيد أن العميل رفض دفع رسوم التوصيل؟ سيتم تسجيلها على الشركة بدون كاش على المندوب.' : value === 'partial' ? 'تأكيد المبلغ المحصّل شامل التوصيل؟ ستُقفل الشحنة.' : 'تأكيد تسليم الشحنة وتحصيل قيمتها كاملة؟ ستُقفل الشحنة.'))
+            return; act({ op: 'status', id: s.id, status: value, notes, collected: (value === 'partial'||value === 'returned_visit') ? cents(amount) : undefined }); } }, "\u062D\u0641\u0638") : React.createElement("span", { className: "saved-status", role:"status" }, s.status === 'postponed' ? 'التأجيل محفوظ ✓' : 'الحالة محفوظة ✓')); }
 function CompanyForm({ item, save, cancel, busy }) { return React.createElement("form", { onSubmit: e => { e.preventDefault(); let f = new FormData(e.currentTarget); save({ id: item?.id, name: f.get('name'), phone: f.get('phone'), delivery: cents(f.get('delivery')), fee: cents(f.get('fee')), allowPartial: f.get('allowPartial') === 'on' }); } },
     React.createElement("label", null,
         "\u0627\u0633\u0645 \u0627\u0644\u0634\u0631\u0643\u0629",
@@ -774,7 +778,7 @@ function DriverShipments({ rows, act, access = { account: true, status: true } }
     s.notes && React.createElement("p", null,
         "\u0645\u0644\u0627\u062D\u0638\u0629: ",
         s.notes),
-    (isFinal(s)||s.status==='returned') ? React.createElement("div", { className: "hint" }, "\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062D\u0627\u0644\u0629 \u0648\u0642\u0641\u0644 \u0627\u0644\u0634\u062D\u0646\u0629 \u0644\u0644\u062D\u0633\u0627\u0628\u0627\u062A.") : access.status ? React.createElement(Status, { s: s, act: act }) : React.createElement("p", null, "\u0639\u0631\u0636 \u0641\u0642\u0637")))); }
+    (isFinal(s)||['returned','returned_unpaid'].includes(s.status)) ? React.createElement("div", { className: "hint" }, "\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062D\u0627\u0644\u0629 \u0648\u0642\u0641\u0644 \u0627\u0644\u0634\u062D\u0646\u0629 \u0644\u0644\u062D\u0633\u0627\u0628\u0627\u062A.") : access.status ? React.createElement(Status, { s: s, act: act }) : React.createElement("p", null, "\u0639\u0631\u0636 \u0641\u0642\u0637")))); }
 function Settlement({ title, type, parties, shipments, payments, closures = [], day, act, busy, canEdit }) { const [party, setParty] = useState(''), [amount, setAmount] = useState(''), [note, setNote] = useState(''); let v = party ? dayAccount(shipments, payments, type, Number(party), day) : { opening: 0, accrued: 0, settled: 0, closing: 0 }; let today = day === businessDate(new Date()), closed = type === 'driver' && closures.some((x) => x.driver_id === Number(party) && x.day === day && !x.reopened_at); return React.createElement("div", { className: "card" },
     React.createElement("h3", null, title),
     React.createElement("label", null,
@@ -949,12 +953,12 @@ function exportDailyExcel(drivers,shipments,payments,day) {
 }
 function DistributionPanel({shipments,companies,drivers,act,busy}) {
  const [q,setQ]=useState(''),[company,setCompany]=useState(''),[unassigned,setUnassigned]=useState(true),[chosen,setChosen]=useState([]),[target,setTarget]=useState('');
- const available=shipments.filter(s=>!['delivered','partial','returned_visit','returned'].includes(s.status)).filter(s=>(!company||Number(s.company_id)===Number(company))&&(!unassigned||!s.driver_id)&&(!q||[s.tracking,s.customer,s.phone,s.address,s.product].some(v=>String(v||'').toLowerCase().includes(q.trim().toLowerCase()))));
+ const available=shipments.filter(s=>!['delivered','partial','returned_visit','returned_unpaid','returned'].includes(s.status)).filter(s=>(!company||Number(s.company_id)===Number(company))&&(!unassigned||!s.driver_id)&&(!q||[s.tracking,s.customer,s.phone,s.address,s.product].some(v=>String(v||'').toLowerCase().includes(q.trim().toLowerCase()))));
  const toggle=id=>setChosen(prev=>prev.includes(id)?prev.filter(x=>x!==id):prev.length>=300?prev:[...prev,id]);
  const visible=available.slice(0,300);const all=visible.length>0&&visible.every(s=>chosen.includes(s.id));
  return React.createElement(React.Fragment,null,
  React.createElement('div',{className:'stats'},
- React.createElement('article',null,React.createElement('span',null,'شحنات غير موزعة'),React.createElement('b',null,shipments.filter(s=>!s.driver_id&&!['delivered','partial','returned_visit','returned'].includes(s.status)).length)),
+ React.createElement('article',null,React.createElement('span',null,'شحنات غير موزعة'),React.createElement('b',null,shipments.filter(s=>!s.driver_id&&!['delivered','partial','returned_visit','returned_unpaid','returned'].includes(s.status)).length)),
  React.createElement('article',null,React.createElement('span',null,'المعروضة'),React.createElement('b',null,available.length)),
  React.createElement('article',null,React.createElement('span',null,'الشحنات المحددة'),React.createElement('b',null,chosen.length)),
  React.createElement('article',null,React.createElement('span',null,'المناديب'),React.createElement('b',null,drivers.length))),
@@ -987,14 +991,14 @@ function CompanyReports({ companies, shipments, events, payments=[], day, setDay
     const id = Number(company), name = companies.find((c) => c.id === id)?.name || '';
     const rows = companyReport(shipments, events, id, day, businessDate(new Date()));
     const state = (value) => ({ new: 'لم يتم التسليم', transit: 'لم يتم التسليم', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة — تحصيل من العميل', returned_unpaid: 'رفض بعد الزيارة — الشركة تتحمل التوصيل', unknown: 'الحالة غير متاحة تاريخيًا' }[value] || 'الحالة غير متاحة تاريخيًا');
-    const finalized = rows.filter(e => ['delivered', 'partial', 'returned_visit'].includes(e.status)), due = finalized.reduce((t, e) => t + companyDue({ ...e.shipment, status: e.status }), 0);
+    const finalized = rows.filter(e => ['delivered', 'partial', 'returned_visit','returned_unpaid'].includes(e.status)), due = finalized.reduce((t, e) => t + companyDue({ ...e.shipment, status: e.status }), 0);
     const paid = payments.filter(p=>p.type==='company'&&Number(p.party_id)===id&&businessDate(p.created)<=day).reduce((n,p)=>n+Number(p.amount||0),0);
     const remaining = due - paid;
     const historicalLimit = day!==businessDate(new Date()) && finalized.length>0;
     const save = () => {
         const wb = XLSX.utils.book_new();
         const intro = [{ 'اسم الشركة': name, 'الحالة حتى تاريخ': day, 'التوقيت': 'القاهرة', 'تنبيه تدقيق تاريخي': historicalLimit?'القيم المالية القديمة قد لا تعكس التصحيحات اللاحقة لأن قيمة التحصيل تاريخيًا لم تكن محفوظة في كل حدث':'', 'ملاحظات': 'صف واحد لكل شحنة. قيمة الشركة قبل خصم أي تسويات مدفوعة؛ محسوبة للحالات المقفولة فقط. تحصيل رفض الزيارة هو التوصيل فقط، والاستلام الجزئي بالمبلغ المسجل. بعض الحالات القديمة غير متاحة تاريخيًا. المبالغ بالجنيه.' }];
-        const list = rows.map(e => ({ 'رقم الشحنة': String(e.shipment.tracking), 'حالة الشحنة': state(e.status), 'اسم العميل': String(e.shipment.customer), 'رقم التليفون': String(e.shipment.phone), 'العنوان': String(e.shipment.address), 'المنتج': String(e.shipment.product), 'قيمة الأوردر شامل التوصيل': e.shipment.total / 100, 'قيمة التوصيل': e.shipment.delivery / 100, 'التحصيل المسجل': ['delivered', 'partial', 'returned_visit'].includes(e.status) ? collected({ ...e.shipment, status: e.status }) / 100 : 'غير مسجل', 'قيمة الشركة قبل التسويات': ['delivered', 'partial', 'returned_visit'].includes(e.status) ? companyDue({ ...e.shipment, status: e.status }) / 100 : 'غير محسوب', 'ملاحظة': String(e.note || '') }));
+        const list = rows.map(e => ({ 'رقم الشحنة': String(e.shipment.tracking), 'حالة الشحنة': state(e.status), 'اسم العميل': String(e.shipment.customer), 'رقم التليفون': String(e.shipment.phone), 'العنوان': String(e.shipment.address), 'المنتج': String(e.shipment.product), 'قيمة الأوردر شامل التوصيل': e.shipment.total / 100, 'قيمة التوصيل': e.shipment.delivery / 100, 'التحصيل المسجل': ['delivered', 'partial', 'returned_visit','returned_unpaid'].includes(e.status) ? collected({ ...e.shipment, status: e.status }) / 100 : 'غير مسجل', 'قيمة الشركة قبل التسويات': ['delivered', 'partial', 'returned_visit','returned_unpaid'].includes(e.status) ? companyDue({ ...e.shipment, status: e.status }) / 100 : 'غير محسوب', 'ملاحظة': String(e.note || '') }));
         const total = [{ 'عدد الشحنات': rows.length, 'عدد الحالات المقفولة': finalized.length, 'قيمة الشركة قبل التسويات للحالات المقفولة': due / 100, 'المدفوع للشركة حتى التاريخ': paid / 100, 'المتبقي للشركة حتى التاريخ': remaining / 100 }];
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(intro), 'بيانات التقرير');
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(list.length ? list : [{ 'ملاحظة': 'لا توجد شحنات حتى التاريخ المختار' }]), 'الشحنات');
@@ -1042,8 +1046,8 @@ function CompanyReports({ companies, shipments, events, payments=[], day, setDay
                             React.createElement("td", null, e.shipment.tracking),
                             React.createElement("td", null, e.shipment.customer),
                             React.createElement("td", null, state(e.status)),
-                            React.createElement("td", null, ['delivered', 'partial', 'returned_visit'].includes(e.status) ? fmt(collected({ ...e.shipment, status: e.status })) : 'غير مسجل'),
-                            React.createElement("td", null, ['delivered', 'partial', 'returned_visit'].includes(e.status) ? fmt(companyDue({ ...e.shipment, status: e.status })) : 'غير محسوب'),
+                            React.createElement("td", null, ['delivered', 'partial', 'returned_visit','returned_unpaid'].includes(e.status) ? fmt(collected({ ...e.shipment, status: e.status })) : 'غير مسجل'),
+                            React.createElement("td", null, ['delivered', 'partial', 'returned_visit','returned_unpaid'].includes(e.status) ? fmt(companyDue({ ...e.shipment, status: e.status })) : 'غير محسوب'),
                             React.createElement("td", null, e.note || '—')))))) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u0634\u062D\u0646\u0627\u062A \u062D\u062A\u0649 \u0647\u0630\u0627 \u0627\u0644\u062A\u0627\u0631\u064A\u062E", detail: "\u062A\u0623\u0643\u062F \u0645\u0646 \u0627\u062E\u062A\u064A\u0627\u0631 \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u0646\u0627\u0633\u0628\u064A\u0646." }))));
 }
 function LocationShare() {
