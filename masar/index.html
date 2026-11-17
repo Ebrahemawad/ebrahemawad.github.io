@@ -123,8 +123,8 @@ function Dashboard({ user }) {
         return;
     } setData(x); };
     useEffect(() => { reload(); }, []);
-    useEffect(() => { if (!data?.owner || tab !== 'monitor')
-        return; const timer = setInterval(() => { void reload(); }, 30000); return () => clearInterval(timer); }, [data?.owner, tab]);
+    useEffect(() => { if ((data?.role !== 'owner' && !(data?.permissions?.drivers?.view && data?.permissions?.shipments?.view)) || tab !== 'monitor')
+        return; const timer = setInterval(() => { void reload(); }, 30000); return () => clearInterval(timer); }, [data?.role, data?.permissions?.drivers?.view, data?.permissions?.shipments?.view, tab]);
     const act = async (body, after) => { setBusy(true); setMsg(''); try {
         let r = await apiFetch('/api/data', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
         let x = await r.json();
@@ -174,7 +174,7 @@ function Dashboard({ user }) {
     let visible = ss.filter(s => (filter === 'all' || s.status === filter) && (!shipDay || (s[shipDayField] && businessDate(s[shipDayField]) === shipDay)) && [s.tracking, s.customer, s.phone, s.address].some(x => String(x || '').toLowerCase().includes(search.toLowerCase())));
     const identityName=String(data.displayName || (data.role==='driver'?data.driver?.name:data.role==='manager'?data.staff?.name:'') || 'مستخدم');
     const identityTitle=String(data.roleTitle || (data.role==='owner'?'صاحب الشركة':data.role==='manager'?'مدير':'مندوب'));
-    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧'], ['distribution', 'توزيع الشحنات', '⇄']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(actualOwner ? [['monitor', 'متابعة المناديب', '◎'], ['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
+    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧'], ['distribution', 'توزيع الشحنات', '⇄']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(allowed('drivers') && allowed('shipments') ? [['monitor', 'متابعة المناديب', '◎']] : []), ...(actualOwner ? [['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
     return React.createElement("div", { className: "shell" },
         React.createElement("aside", null,
             React.createElement("div", { className: "brand masar-brand" },
@@ -207,7 +207,7 @@ function Dashboard({ user }) {
             !owner && React.createElement(LocationShare, {driverId:data.driver?.id,shift:data.shift,onShiftChange:reload}),
             actualOwner && tab === 'migration' && React.createElement(MigrationPanel, { act: act, busy: busy }),
             actualOwner && tab === 'corrections' && React.createElement(CorrectionHistory, { corrections: data.corrections || [], shipments: ss }),
-            actualOwner && tab === 'monitor' && React.createElement(DriverMonitor, { drivers: drivers, shipments: ss, events: data.shipmentEvents || [], locations: data.locations || [], day: day, setDay: setDay, refresh: reload }),
+            allowed('drivers') && allowed('shipments') && tab === 'monitor' && React.createElement(DriverMonitor, { drivers: drivers, shipments: ss, events: data.shipmentEvents || [], locations: data.locations || [], day: day, setDay: setDay, refresh: reload }),
             owner && tab === 'overview' && React.createElement(React.Fragment, null,
                 React.createElement(CustodySummary,{shipments:ss,payments:payments,handovers:data.returnHandovers||[],driverId:null,label:'إجمالي عهدة الشحنات وحالتها'}),
                 React.createElement(CompanyCustodyPanel,{companies:companies,shipments:ss,payments:payments,handovers:data.returnHandovers||[]}),
