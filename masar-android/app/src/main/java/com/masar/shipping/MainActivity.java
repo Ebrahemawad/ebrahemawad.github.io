@@ -2,6 +2,8 @@ package com.masar.shipping;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -9,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import org.json.JSONArray;
 import android.util.Base64;
 import java.io.OutputStream;
 import android.webkit.DownloadListener;
@@ -25,6 +28,8 @@ import java.util.Locale;
 public class MainActivity extends Activity {
     private static final String START_URL = "https://ebrahemawad.github.io/masar/";
     private static final String APP_HOST = "ebrahemawad.github.io";
+    static final String CHANNEL_ID = "masar_delivery_reminders";
+    private static final int NOTIFY_REQ = 711;
     private static final int LOCATION_REQ = 707;
     private static final int FILE_REQ = 708;
     private static final int PDF_SAVE_REQ = 709;
@@ -37,6 +42,10 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        if(Build.VERSION.SDK_INT>=26){
+            NotificationManager notifications=getSystemService(NotificationManager.class);
+            notifications.createNotificationChannel(new NotificationChannel(CHANNEL_ID,"تذكيرات توصيل مسار",NotificationManager.IMPORTANCE_HIGH));
+        }
         web = new WebView(this);
         setContentView(web);
         WebSettings settings = web.getSettings();
@@ -89,6 +98,42 @@ public class MainActivity extends Activity {
                 }
             }
         }, "MasarAndroid");
+        // Native Android reminders: keep existing PDF, GPS and file-upload features unchanged.
+        web.addJavascriptInterface(new Object() {
+            private boolean trusted(){
+                String current=web.getUrl();
+                if(current==null)return false;
+                Uri uri=Uri.parse(current);
+                return "https".equals(uri.getScheme())&&APP_HOST.equalsIgnoreCase(uri.getHost())
+                    &&uri.getPath()!=null&&uri.getPath().startsWith("/masar/");
+            }
+            @JavascriptInterface public void enableNotifications(){
+                runOnUiThread(()->{
+                    if(!trusted())return;
+                    if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)
+                        requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},NOTIFY_REQ);
+                });
+            }
+            @JavascriptInterface public void syncAppointments(String json){
+                runOnUiThread(()->{
+                    if(!trusted()||json==null||json.length()>200000)return;
+                    try{ReminderScheduler.sync(MainActivity.this,new JSONArray(json));}
+                    catch(Exception e){android.util.Log.w("Masar","Unable to sync reminder appointments",e);}
+                });
+            }
+            @JavascriptInterface public void clearReminders(){
+                runOnUiThread(()->{if(trusted())ReminderScheduler.clear(MainActivity.this);});
+            }
+            @JavascriptInterface public void testNotification(){
+                runOnUiThread(()->{
+                    if(!trusted())return;
+                    if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){
+                        requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},NOTIFY_REQ);return;
+                    }
+                    ReminderReceiver.show(MainActivity.this,"اختبار إشعارات مسار","إشعارات التطبيق الأصلية شغالة على الجهاز",900001);
+                });
+            }
+        }, "MasarNative");
         CookieManager.getInstance().setAcceptCookie(true);
         // The site and the login service need persistent browser cookies.
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
@@ -181,7 +226,7 @@ public class MainActivity extends Activity {
     @Override protected void onDestroy() {
         if(fileCallback!=null){fileCallback.onReceiveValue(null);fileCallback=null;}
         pdfPending = null;
-        if(web!=null) web.destroy();
+        if(web!=null){web.removeJavascriptInterface("MasarNative");web.destroy();}
         super.onDestroy();
     }
 }
