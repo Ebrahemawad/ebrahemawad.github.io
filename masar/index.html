@@ -60,13 +60,14 @@ const createClient = window.supabase.createClient;
 const dateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' });
 function businessDate(value) { const date = new Date(value); if (!Number.isFinite(date.getTime()))
     return ''; const parts = dateFormatter.formatToParts(date), part = (n) => parts.find(p => p.type === n)?.value || ''; return `${part('year')}-${part('month')}-${part('day')}`; }
-const isFinal = (s) => ['delivered', 'partial', 'returned_visit'].includes(s.status) && !!s.delivered;
+const isFinal = (s) => ['delivered', 'partial', 'returned_visit', 'returned_unpaid'].includes(s.status) && !!s.delivered;
 const collected = (s) => s.status === 'delivered' ? s.total : (['partial', 'returned_visit'].includes(s.status) ? s.collected || 0 : 0);
 const companyDue = (s) => s.status === 'delivered' || s.status === 'partial' ? collected(s) - s.delivery : 0;
 const driverDue = (s) => isFinal(s) ? collected(s) - s.driver_fee : 0;
+const companyCharge = (s) => s.status === 'returned_unpaid' ? s.delivery : s.status === 'returned_visit' ? Math.max(0, s.delivery-collected(s)) : 0;
 const driverFee = (s) => isFinal(s) ? s.driver_fee : 0;
-function dayAccount(shipments, payments, type, id, day) { const items = shipments.filter(s => isFinal(s) && (type === 'driver' ? s.driver_id === id : s.company_id === id)); const paid = payments.filter(p => p.type === type && p.party_id === id); const value = type === 'driver' ? driverDue : companyDue; const sum = (arr, fn) => arr.reduce((a, x) => a + fn(x), 0); const before = items.filter(s => businessDate(s.delivered) < day), current = items.filter(s => businessDate(s.delivered) === day), paidBefore = paid.filter(p => businessDate(p.created) < day), paidToday = paid.filter(p => businessDate(p.created) === day); const opening = sum(before, value) - sum(paidBefore, p => p.amount), accrued = sum(current, value), settled = sum(paidToday, p => p.amount); return { opening, accrued, settled, closing: opening + accrued - settled, items: current, payments: paidToday, received: sum(current, collected), fees: sum(current, driverFee) }; }
-function companyDay(shipments, payments, day) { const list = shipments.filter(s => isFinal(s) && businessDate(s.delivered) === day), dayPay = payments.filter(p => businessDate(p.created) === day), sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0), shipping = sum(list, s => s.delivery), commissions = sum(list, driverFee), fromDrivers = sum(dayPay.filter(p => p.type === 'driver'), p => p.amount), toCompanies = sum(dayPay.filter(p => p.type === 'company'), p => p.amount); return { count: list.length, collected: sum(list, collected), shipping, commissions, earned: shipping - commissions, fromDrivers, toCompanies, netCash: fromDrivers - toCompanies }; }
+function dayAccount(shipments, payments, type, id, day) { const items = shipments.filter(s => isFinal(s) && (type === 'driver' ? s.driver_id === id : s.company_id === id)); const paid = payments.filter(p => (p.type === type || (type === 'driver' && p.type === 'driver_payout')) && p.party_id === id); const value = type === 'driver' ? driverDue : companyDue; const sum = (arr, fn) => arr.reduce((a, x) => a + fn(x), 0); const before = items.filter(s => businessDate(s.delivered) < day), current = items.filter(s => businessDate(s.delivered) === day), paidBefore = paid.filter(p => businessDate(p.created) < day), paidToday = paid.filter(p => businessDate(p.created) === day); const opening = sum(before, value) - sum(paidBefore, p => p.type === 'driver_payout' ? -p.amount : p.amount), accrued = sum(current, value), settled = sum(paidToday, p => p.type === 'driver_payout' ? -p.amount : p.amount); return { opening, accrued, settled, closing: opening + accrued - settled, items: current, payments: paidToday, received: sum(current, collected), fees: sum(current, driverFee) }; }
+function companyDay(shipments, payments, day) { const list = shipments.filter(s => isFinal(s) && businessDate(s.delivered) === day), dayPay = payments.filter(p => businessDate(p.created) === day), sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0), shipping = sum(list, s => s.delivery), commissions = sum(list, driverFee), fromDrivers = sum(dayPay.filter(p => p.type === 'driver'), p => p.amount), toCompanies = sum(dayPay.filter(p => p.type === 'company'), p => p.amount), fromCompanies = sum(dayPay.filter(p => p.type === 'company_receipt'), p => p.amount), toDrivers = sum(dayPay.filter(p => p.type === 'driver_payout'), p => p.amount); return { count: list.length, collected: sum(list, collected), shipping, commissions, earned: shipping - commissions, fromDrivers, toCompanies, fromCompanies, toDrivers, netCash: fromDrivers + fromCompanies - toCompanies - toDrivers }; }
 // Return one snapshot for each shipment known by the requested Cairo business day.
 function companyReport(shipments, events, companyId, day, today) {
     return shipments.filter(s => s.company_id === companyId && s.created && businessDate(s.created) <= day).map(s => {
@@ -76,7 +77,7 @@ function companyReport(shipments, events, companyId, day, today) {
         let note = last?.note || '';
         // Delivery time existed before event tracking; use it without fabricating other past movements.
         if (s.delivered && businessDate(s.delivered) <= day && (!last || s.delivered > last.created)) {
-            status = ['delivered', 'partial', 'returned_visit'].includes(s.status) ? s.status : 'unknown';
+            status = ['delivered', 'partial', 'returned_visit', 'returned_unpaid'].includes(s.status) ? s.status : 'unknown';
             note = s.notes || '';
         }
         if (!status && s.status === 'new')
@@ -110,7 +111,7 @@ const cents = (v) => {
     const amount=Math.round(Number(numeric)*100);
     return Number.isSafeInteger(amount)?amount:NaN;
 };
-const labels = { new: 'جديدة', transit: 'مع المندوب', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة' };
+const labels = { new: 'جديدة', transit: 'مع المندوب', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة — تحصيل من العميل', returned_unpaid: 'رفض بعد الزيارة — الشركة تتحمل التوصيل' };
 const fields = [['tracking', 'رقم الشحنة'], ['customer', 'اسم العميل'], ['phone', 'رقم التليفون'], ['address', 'العنوان'], ['product', 'اسم المنتج'], ['total', 'قيمة الأوردر']];
 function Button({ children, ...p }) { return React.createElement("button", { ...p }, children); }
 function Dashboard({ user }) {
@@ -578,7 +579,7 @@ function CompanyDaily({ shipments, payments, day }) { let v = companyDay(shipmen
 
 function returnItemValue(s){
  if(s.status==='returned'||s.status==='postponed')return Number(s.total)||0;
- if(s.status==='returned_visit')return Math.max(0,(Number(s.total)||0)-(Number(s.delivery)||0));
+ if(['returned_visit','returned_unpaid'].includes(s.status))return Math.max(0,(Number(s.total)||0)-(Number(s.delivery)||0));
  if(s.status==='partial')return Math.max(0,(Number(s.total)||0)-(Number(s.collected)||0));
  return 0;
 }
@@ -591,19 +592,19 @@ function custodySummary(shipments,payments,handovers,driverId){
  const active=sh.filter(s=>['new','transit'].includes(s.status));
  const postponed=sh.filter(s=>s.status==='postponed');
  const delivered=sh.filter(s=>['delivered','partial','returned_visit'].includes(s.status));
- const completed=sh.filter(s=>['delivered','partial','returned_visit','returned'].includes(s.status));
+ const completed=sh.filter(s=>['delivered','partial','returned_visit','returned_unpaid','returned'].includes(s.status));
  const returns=sh.filter(s=>returnItemValue(s)>0);
  const outstanding=returns.filter(s=>!handoverIds.has(Number(s.id)));
  const collectedTotal=totals(delivered.map(collected));
  const feeTotal=totals(delivered.map(s=>Number(s.driver_fee)||0));
- const netDue=collectedTotal-feeTotal-totals(paymentList.map(p=>p.amount));
+ const netDue=collectedTotal-feeTotal-totals(paymentList.filter(p=>p.type==='driver').map(p=>p.amount))+totals(paymentList.filter(p=>p.type==='driver_payout').map(p=>p.amount));
  return {
    count:sh.length,totalValue:totals(sh.map(s=>s.total)),
    assignedValue:totals(sh.filter(s=>s.driver_id!=null).map(s=>s.total)),
    activeCount:active.length,activeValue:totals(active.map(s=>s.total)),postponedCount:postponed.length,postponedValue:totals(postponed.map(s=>s.total)),
    doneCount:completed.length,progress:sh.length?Math.round(completed.length/sh.length*100):0,
    cashCollected:collectedTotal,fees:feeTotal,
-   cashRemitted:totals(paymentList.map(p=>p.amount)),cashDue:netDue,
+   cashRemitted:totals(paymentList.filter(p=>p.type==='driver').map(p=>p.amount)),cashDue:netDue,
    returnCount:returns.length,returnTotal:totals(returns.map(returnItemValue)),
    returnPending:totals(outstanding.map(returnItemValue)),
    returnPendingCount:outstanding.length,returnReceived:totals(returns.filter(s=>handoverIds.has(Number(s.id))).map(returnItemValue)),
@@ -638,7 +639,7 @@ function CustodySummary({shipments,payments,handovers,driverId,label}){
  const cards=[
   ['إجمالي عهدة الشحنات',fmt(v.totalValue),'قيمة الشحنات المسجلة'],
   ['المحصّل من العملاء',fmt(v.cashCollected),'كاش ناتج عن التوصيل'],
-  ['المطلوب توريده نقدًا',fmt(v.cashDue),'بعد نصيب المندوب والتوريدات'],
+  ['صافي عهدة الكاش',fmt(v.cashDue),v.cashDue<0?'رصيد مستحق للمندوب':'بعد نصيب المندوب والتوريدات'],
   ['شحنات قيد التوصيل',fmt(v.activeValue),v.activeCount+' شحنة'],
   ['مؤجلة ضمن المرتجعات',fmt(v.postponedValue),v.postponedCount+' شحنة — قابلة لإعادة التوزيع'],
   ['مرتجعات ومؤجلات لم تُسلّم للإدارة',fmt(v.returnPending),v.returnPendingCount+' شحنة'],
@@ -985,7 +986,7 @@ function CompanyReports({ companies, shipments, events, payments=[], day, setDay
     const [company, setCompany] = useState('');
     const id = Number(company), name = companies.find((c) => c.id === id)?.name || '';
     const rows = companyReport(shipments, events, id, day, businessDate(new Date()));
-    const state = (value) => ({ new: 'لم يتم التسليم', transit: 'لم يتم التسليم', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة', unknown: 'الحالة غير متاحة تاريخيًا' }[value] || 'الحالة غير متاحة تاريخيًا');
+    const state = (value) => ({ new: 'لم يتم التسليم', transit: 'لم يتم التسليم', delivered: 'تم التسليم', partial: 'استلام جزئي', postponed: 'مؤجلة', returned: 'رفض بالتليفون', returned_visit: 'رفض بعد الزيارة — تحصيل من العميل', returned_unpaid: 'رفض بعد الزيارة — الشركة تتحمل التوصيل', unknown: 'الحالة غير متاحة تاريخيًا' }[value] || 'الحالة غير متاحة تاريخيًا');
     const finalized = rows.filter(e => ['delivered', 'partial', 'returned_visit'].includes(e.status)), due = finalized.reduce((t, e) => t + companyDue({ ...e.shipment, status: e.status }), 0);
     const paid = payments.filter(p=>p.type==='company'&&Number(p.party_id)===id&&businessDate(p.created)<=day).reduce((n,p)=>n+Number(p.amount||0),0);
     const remaining = due - paid;
