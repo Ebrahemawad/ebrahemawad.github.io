@@ -14,18 +14,18 @@ window.MasarExportDriverOrders=async function(driver,shipments){
   var title=document.createElement("h2");title.textContent="مَسار | كشف أوردرات المندوب";title.style.cssText="font-size:25px;color:#265dd0;border-bottom:3px solid #265dd0;padding-bottom:12px;margin:0 0 12px;";box.appendChild(title);
   var meta=document.createElement("p");meta.textContent="المندوب: "+driver.name+" | الهاتف: "+(driver.phone||"—")+" | عدد الأوردرات: "+shipments.length+" | تاريخ التصدير: "+new Date().toLocaleDateString("ar-EG");meta.style="font-size:13px;margin:0 0 18px";box.appendChild(meta);
   var table=document.createElement("table");table.style.cssText="width:100%;border-collapse:collapse;table-layout:fixed;direction:rtl;font-size:11px;";
-  var tr=document.createElement("tr");["م","رقم الشحنة","العميل","الهاتف","العنوان","المنتج","المبلغ","الحالة المسجلة","الحالة"].forEach(function(n){addCell(tr,n,true)});
+  var tr=document.createElement("tr");["م","رقم الشحنة","العميل","الهاتف","العنوان","المنتج","الإجمالي","المقدم","المطلوب تحصيله","الحالة المسجلة","الحالة"].forEach(function(n){addCell(tr,n,true)});
   var head=document.createElement("thead");head.appendChild(tr);table.appendChild(head);
-  var body=document.createElement("tbody");var sum=0;
+  var body=document.createElement("tbody");var sum=0,advanceSum=0,remainingSum=0;
   shipments.forEach(function(s,i){
     var row=document.createElement("tr");row.style.pageBreakInside="avoid";
-    var amount=Number(s.total)||0;sum+=amount;
+    var amount=Number(s.total)||0,advance=Number(s.advance_amount)||0,remaining=Math.max(0,amount-advance);sum+=amount;advanceSum+=advance;remainingSum+=remaining;
     var status=(window.MasarOrderStatuses&&window.MasarOrderStatuses[s.status])||s.status;
-    [i+1,s.tracking,s.customer,s.phone,s.address,s.product,(amount/100).toFixed(2),status,""].forEach(function(v){addCell(row,v,false)});
+    [i+1,s.tracking,s.customer,s.phone,s.address,s.product,(amount/100).toFixed(2),(advance/100).toFixed(2),(remaining/100).toFixed(2),status,""].forEach(function(v){addCell(row,v,false)});
     body.appendChild(row);
   });
   table.appendChild(body);box.appendChild(table);
-  var footer=document.createElement("p");footer.textContent="عدد الشحنات: "+shipments.length+" | إجمالي قيمة الشحنات: "+(sum/100).toFixed(2)+" ج.م";footer.style.cssText="font-size:12px;margin-top:18px;border-top:1px solid #cbd5e7;padding-top:12px;";box.appendChild(footer);
+  var footer=document.createElement("p");footer.textContent="عدد الشحنات: "+shipments.length+" | إجمالي قيمة الشحنات: "+(sum/100).toFixed(2)+" ج.م | المقدم: "+(advanceSum/100).toFixed(2)+" ج.م | المطلوب تحصيله: "+(remainingSum/100).toFixed(2)+" ج.م";footer.style.cssText="font-size:12px;margin-top:18px;border-top:1px solid #cbd5e7;padding-top:12px;";box.appendChild(footer);
   // Keep the source off-screen, but never copy that off-screen positioning into
   // html2pdf's cloned document (otherwise html2canvas captures a blank page).
   var staging=document.createElement("div");
