@@ -174,7 +174,7 @@ function Dashboard({ user }) {
     let visible = ss.filter(s => (filter === 'all' || s.status === filter) && (!shipDay || (s[shipDayField] && businessDate(s[shipDayField]) === shipDay)) && [s.tracking, s.customer, s.phone, s.address].some(x => String(x || '').toLowerCase().includes(search.toLowerCase())));
     const identityName=String(data.displayName || (data.role==='driver'?data.driver?.name:data.role==='manager'?data.staff?.name:'') || 'مستخدم');
     const identityTitle=String(data.roleTitle || (data.role==='owner'?'صاحب الشركة':data.role==='manager'?'مدير':'مندوب'));
-    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧'], ['distribution', 'توزيع الشحنات', '⇄']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(allowed('drivers') && allowed('shipments') ? [['monitor', 'متابعة المناديب', '◎']] : []), ...(actualOwner ? [['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
+    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧'], ['distribution', 'توزيع الشحنات', '⇄']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈'],['returns', 'استلام المرتجعات', '↩']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(allowed('drivers') && allowed('shipments') ? [['monitor', 'متابعة المناديب', '◎']] : []), ...(actualOwner ? [['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
     return React.createElement("div", { className: "shell" },
         React.createElement("aside", null,
             React.createElement("div", { className: "brand masar-brand" },
@@ -410,9 +410,9 @@ function Dashboard({ user }) {
                 " \u0646\u0632\u0651\u0644 \u0645\u0644\u0641 Excel \u064A\u062D\u062A\u0648\u064A \u0639\u0644\u0649 \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0648\u0627\u0644\u062E\u0632\u0646\u0629 \u0648\u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645\u064A\u0646 \u0644\u0644\u0627\u062D\u062A\u0641\u0627\u0638 \u0628\u0646\u0633\u062E\u0629 \u0648\u0645\u0631\u0627\u062C\u0639\u062A\u0647\u0627. \u0627\u0644\u0627\u0633\u062A\u0639\u0627\u062F\u0629 \u0627\u0644\u062A\u0644\u0642\u0627\u0626\u064A\u0629 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629 \u062D\u0627\u0644\u064A\u064B\u0627. ",
                 React.createElement("button", { className: "subtle", onClick: exportData }, "\u2193 \u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A")),
             owner && tab === 'accounts' && React.createElement(AccountsPanel, { entries: cashEntries, payments: payments, shipments: ss, day: day, setDay: setDay, act: act, busy: busy, canEdit: allowed('accounts', 'edit') }),
+            owner && tab === 'returns' && allowed('settlements') && React.createElement(ReturnHandoverPanel,{shipments:ss,drivers:drivers,handovers:data.returnHandovers||[],act:act,busy:busy,canEdit:allowed('settlements','edit')}),
             owner && tab === 'settlements' && React.createElement(React.Fragment, null,
                 React.createElement(CustodySummary,{shipments:ss,payments:payments,handovers:data.returnHandovers||[],driverId:null,label:'مراجعة إجمالي العهدة قبل التسوية'}),
-                React.createElement(ReturnHandoverPanel,{shipments:ss,drivers:drivers,handovers:data.returnHandovers||[],act:act,busy:busy,canEdit:allowed('settlements','edit')}),
                 React.createElement(DateSelect, { day: day, setDay: setDay }),
                 React.createElement("div",{className:"grid"},
                    React.createElement(SpecialSettlement,{type:"company_receipt",parties:companies,shipments:ss,payments,day,act,busy,canEdit:allowed('settlements','edit')}),
@@ -667,14 +667,40 @@ function CustodySummary({shipments,payments,handovers,driverId,label}){
  );
 }
 function ReturnHandoverPanel({shipments,drivers,handovers,act,busy,canEdit}){
+ const [selectedDriver,setSelectedDriver]=useState('');
+ const [view,setView]=useState('pending');
  const assigned=shipments.filter(s=>s.driver_id!=null&&returnItemValue(s)>0);
  const received=new Set(handovers.filter(x=>!x.released_at).map(x=>Number(x.shipment_id)));
- const outstanding=assigned.filter(s=>!received.has(Number(s.id)));
+ const outstanding=assigned.filter(s=>!received.has(Number(s.id))&&(!selectedDriver||Number(s.driver_id)===Number(selectedDriver)));
+ const receivedList=handovers.filter(x=>!x.released_at&&(!selectedDriver||Number(x.driver_id)===Number(selectedDriver)));
+
  return React.createElement('div',{className:'card space'},
   React.createElement('div',{className:'cardhead'},React.createElement('div',null,
     React.createElement('h3',null,'استلام المرتجعات والمؤجلات من المناديب'),
     React.createElement('p',null,'المؤجل يُعرض كمرتجع مؤقت في التسوية بقيمته الكاملة. لا تسقط عهدته إلا عند استلامه فعليًا، ويمكن إعادة توزيعه للتوصيل.'))),
-  outstanding.length?React.createElement('div',{className:'tablewrap'},
+  React.createElement('div',{className:'toolbar',style:{display:'flex',flexWrap:'wrap',gap:12,alignItems:'end'}},
+   React.createElement('label',null,'فلتر المندوب',
+    React.createElement('select',{value:selectedDriver,onChange:e=>setSelectedDriver(e.target.value)},
+     React.createElement('option',{value:''},'كل المناديب'),
+     drivers.map(d=>React.createElement('option',{key:d.id,value:d.id},d.name)))),
+   React.createElement('label',null,'حالة الاستلام',
+    React.createElement('select',{value:view,onChange:e=>setView(e.target.value)},
+     React.createElement('option',{value:'pending'},'معلقة للاستلام'),
+     React.createElement('option',{value:'received'},'تم استلامها')))),
+  React.createElement('div',{className:'moneygrid'},
+   React.createElement('div',null,React.createElement('small',null,'معلقة'),React.createElement('b',null,outstanding.length)),
+   React.createElement('div',null,React.createElement('small',null,'قيمة الطرود المعلقة'),React.createElement('b',null,fmt(outstanding.reduce((n,s)=>n+returnItemValue(s),0)))),
+   React.createElement('div',null,React.createElement('small',null,'تم استلامها'),React.createElement('b',null,receivedList.length))),
+  view==='received'?
+   (receivedList.length?React.createElement('div',{className:'tablewrap'},React.createElement('table',null,
+     React.createElement('thead',null,React.createElement('tr',null,['رقم الشحنة','المندوب','القيمة','تاريخ الاستلام'].map(x=>React.createElement('th',{key:x},x)))),
+     React.createElement('tbody',null,receivedList.map(x=>React.createElement('tr',{key:x.shipment_id},
+      React.createElement('td',null,'#'+(shipments.find(s=>Number(s.id)===Number(x.shipment_id))?.tracking||x.shipment_id)),
+      React.createElement('td',null,drivers.find(d=>Number(d.id)===Number(x.driver_id))?.name||'—'),
+      React.createElement('td',null,fmt(x.amount)),
+      React.createElement('td',null,new Date(x.received_at).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'}))))))):
+     React.createElement('p',{className:'muted'},'لا توجد مرتجعات مستلمة للمندوب المختار.')):
+    outstanding.length?React.createElement('div',{className:'tablewrap'},
    React.createElement('table',null,React.createElement('thead',null,React.createElement('tr',null,
     ['رقم الشحنة','المندوب','نوع المرتجع','قيمة الطرد','الإجراء'].map(x=>React.createElement('th',{key:x},x)))),
     React.createElement('tbody',null,outstanding.map(s=>React.createElement('tr',{key:s.id},
@@ -685,7 +711,7 @@ function ReturnHandoverPanel({shipments,drivers,handovers,act,busy,canEdit}){
        act({op:'return_handover',shipmentId:s.id});
      }},'تأكيد استلام الطرد'):React.createElement('span',null,'عرض فقط'))))))):
    React.createElement('p',{className:'muted'},'لا توجد مرتجعات أو مؤجلات معلّقة للاستلام.'),
-  React.createElement('p',{className:'muted'},'تم استلام '+handovers.filter(x=>!x.released_at).length+' طرد حاليًا، وتم الاحتفاظ بسجل الاستلام وإعادة التوزيع. لا تُسجل هذه القيم كفلوس نقدية.')
+  React.createElement('p',{className:'muted'},'تم تسجيل استلام '+receivedList.length+' طرد من الفلتر الحالي. استلام الطرد لا يضيف رصيدًا نقديًا.')
  );
 }
 function EditDriver({driver,act,busy}){
