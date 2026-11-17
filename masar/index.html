@@ -204,7 +204,7 @@ function Dashboard({ user }) {
             msg && React.createElement("div", { className: "notice", role: "status" },
                 msg,
                 React.createElement("button", { onClick: () => setMsg('') }, "\u00D7")),
-            !owner && React.createElement(LocationShare, {driverId:data.driver?.id}),
+            !owner && React.createElement(LocationShare, {driverId:data.driver?.id,shift:data.shift,onShiftChange:reload}),
             actualOwner && tab === 'migration' && React.createElement(MigrationPanel, { act: act, busy: busy }),
             actualOwner && tab === 'corrections' && React.createElement(CorrectionHistory, { corrections: data.corrections || [], shipments: ss }),
             actualOwner && tab === 'monitor' && React.createElement(DriverMonitor, { drivers: drivers, shipments: ss, events: data.shipmentEvents || [], locations: data.locations || [], day: day, setDay: setDay, refresh: reload }),
@@ -286,7 +286,7 @@ function Dashboard({ user }) {
                         React.createElement("option", { value: "" }, "\u0627\u062E\u062A\u0631 \u0627\u0644\u0645\u0646\u062F\u0648\u0628"),
                         drivers.map(d => React.createElement("option", { value: d.id, key: d.id }, d.name))),
                     React.createElement("button", { disabled: !selected.length || !target || busy, onClick: () => act({ op: 'assign', ids: selected, driverId: target }, () => setSelected([])) }, "\u062A\u0648\u0632\u064A\u0639 \u0627\u0644\u0634\u062D\u0646\u0627\u062A")),
-                visible.length ? (owner ? React.createElement(ShipmentTable, { rows: visible, owner: owner, allowCorrection: actualOwner, readOnly: !allowed('shipments', 'edit'), companyName: companyName, driverName: driverName, selected: selected, toggle: (id) => setSelected(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]), act: act }) : React.createElement(DriverShipments, { rows: visible, act: act, access: data.driverAccess })) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u0634\u062D\u0646\u0627\u062A \u0644\u0644\u0639\u0631\u0636", detail: "\u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u062C\u062F\u064A\u062F\u0629 \u0647\u062A\u0638\u0647\u0631 \u0647\u0646\u0627 \u0628\u0639\u062F \u0625\u0636\u0627\u0641\u062A\u0647\u0627." })),
+                visible.length ? (owner ? React.createElement(ShipmentTable, { rows: visible, owner: owner, allowCorrection: actualOwner, readOnly: !allowed('shipments', 'edit'), companyName: companyName, driverName: driverName, selected: selected, toggle: (id) => setSelected(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]), act: act }) : data.shift ? React.createElement(DriverShipments, { rows: visible, act: act, access: data.driverAccess }) : React.createElement(Empty, { text: 'ابدأ الشيفت أولاً', detail: 'اضغط ابدأ الشيفت علشان تقدر تفتح مهامك وتحدث الشحنات.' })) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u0634\u062D\u0646\u0627\u062A \u0644\u0644\u0639\u0631\u0636", detail: "\u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u062C\u062F\u064A\u062F\u0629 \u0647\u062A\u0638\u0647\u0631 \u0647\u0646\u0627 \u0628\u0639\u062F \u0625\u0636\u0627\u0641\u062A\u0647\u0627." })),
             owner && tab === 'companies' && React.createElement("div", { className: "grid" },
                 React.createElement("div", { className: "card" },
                     React.createElement("div", { className: "cardhead" },
@@ -1097,80 +1097,69 @@ function CompanyReports({ companies, shipments, events, payments=[], day, setDay
                             React.createElement("td", null, ['delivered', 'partial', 'returned_visit','returned_unpaid'].includes(e.status) ? fmt(companyDue({ ...e.shipment, status: e.status })) : 'غير محسوب'),
                             React.createElement("td", null, e.note || '—')))))) : React.createElement(Empty, { text: "\u0644\u0627 \u062A\u0648\u062C\u062F \u0634\u062D\u0646\u0627\u062A \u062D\u062A\u0649 \u0647\u0630\u0627 \u0627\u0644\u062A\u0627\u0631\u064A\u062E", detail: "\u062A\u0623\u0643\u062F \u0645\u0646 \u0627\u062E\u062A\u064A\u0627\u0631 \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u0646\u0627\u0633\u0628\u064A\u0646." }))));
 }
-function LocationShare({driverId}) {
-    const [active,setActive]=useState(false),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
-    const activeRef=useRef(false),watchRef=useRef(null),timerRef=useRef(null),pendingRef=useRef(null),lastRef=useRef(null),lastSentRef=useRef(0),generationRef=useRef(0);
-    const storageKey='masar-location-shift-'+String(driverId||'unknown');
-    const saved=()=>{try{return sessionStorage.getItem(storageKey)==='1'}catch{return false}};
-    const save=(enabled)=>{try{if(enabled)sessionStorage.setItem(storageKey,'1');else sessionStorage.removeItem(storageKey)}catch{}};
-    const send=(pos,force=false)=>{
-        if(!activeRef.current||!pos||pendingRef.current)return;
-        const lat=Number(pos.coords.latitude),lon=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy);
-        if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180||!Number.isFinite(accuracy))return;
-        if(Date.now()-Number(pos.timestamp||0)>60000){setMessage('آخر قراءة GPS قديمة؛ هنعرض للإدارة وقت آخر موقع موثوق لحد وصول قراءة جديدة.');return;}
-        if(!force&&Date.now()-lastSentRef.current<25000)return;
-        const generation=generationRef.current;lastSentRef.current=Date.now();
-        const request=apiFetch('/api/data',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({op:'location',latitude:lat,longitude:lon,accuracy})})
-          .then(async r=>{if(!r.ok)throw Error('فشل الاتصال');if(activeRef.current&&generation===generationRef.current)setMessage('آخر موقع اتبعت للإدارة الساعة '+new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}));})
-          .catch(()=>{if(activeRef.current&&generation===generationRef.current)setMessage('تعذر إرسال الموقع؛ بنحاول تلقائيًا مع عودة الإنترنت.')})
-          .finally(()=>{if(pendingRef.current===request)pendingRef.current=null;});
-        pendingRef.current=request;
+function LocationShare({driverId,shift:serverShift,onShiftChange}) {
+    const [shift,setShift]=useState(serverShift||null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+    const [clock,setClock]=useState(Date.now());
+    const activeRef=useRef(false),watchRef=useRef(null),timerRef=useRef(null),pendingRef=useRef(null),lastRef=useRef(null),lastSentRef=useRef(0);
+    const endTime=shift?new Date(shift.can_end_at||new Date(new Date(shift.started_at).getTime()+28800000).toISOString()).getTime():0;
+    const remaining=Math.max(0,endTime-clock);
+    const countdown=remaining?String(Math.floor(remaining/3600000)).padStart(2,'0')+':'+String(Math.floor(remaining%3600000/60000)).padStart(2,'0')+':'+String(Math.floor(remaining%60000/1000)).padStart(2,'0'):'';
+    const request=async payload=>{
+        const r=await apiFetch('/api/data',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+        const body=await r.json().catch(()=>({}));
+        if(!r.ok||body.error)throw new Error(body.error||'تعذر الاتصال بالسيرفر');
+        return body;
     };
     const cleanup=()=>{
         if(watchRef.current!==null&&navigator.geolocation?.clearWatch){navigator.geolocation.clearWatch(watchRef.current);watchRef.current=null;}
         if(timerRef.current!==null){clearInterval(timerRef.current);timerRef.current=null;}
+        activeRef.current=false;
     };
-    const stop=async()=>{
-        if(!activeRef.current)return;
-        activeRef.current=false;generationRef.current++;setActive(false);save(false);cleanup();
-        setBusy(true);
-        try{
-            if(pendingRef.current)await pendingRef.current;
-            const response=await apiFetch('/api/data',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({op:'location_stop'})});
-            setMessage(response.ok?'تم إنهاء الشيفت وإيقاف مشاركة الموقع.':'المشاركة اتوقفت على الموبايل، لكن تحديث حالة الإدارة تعذر؛ آخر موقع هيظهر قديم.');
-        }catch{setMessage('المشاركة اتوقفت على الموبايل؛ تعذر إخطار السيرفر، ووقت آخر موقع للإدارة هيوضح إنه قديم.')}
-        finally{setBusy(false);}
+    const send=pos=>{
+        if(!activeRef.current||!pos||pendingRef.current)return;
+        const lat=Number(pos.coords.latitude),lon=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy);
+        if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180||!Number.isFinite(accuracy)||Date.now()-Number(pos.timestamp||0)>60000)return;
+        if(Date.now()-lastSentRef.current<25000)return;
+        lastSentRef.current=Date.now();
+        const pending=request({op:'location',latitude:lat,longitude:lon,accuracy}).catch(()=>{}).finally(()=>{if(pendingRef.current===pending)pendingRef.current=null;});
+        pendingRef.current=pending;
     };
-    const start=(restore=false)=>{
-        if(activeRef.current)return;
-        if(!navigator.geolocation||!navigator.geolocation.watchPosition){setMessage('المتصفح لا يدعم التتبع المستمر للموقع.');save(false);return;}
-        activeRef.current=true;generationRef.current++;setActive(true);save(true);
-        setMessage(restore?'استئناف شيفت الموقع بعد تحديث الصفحة…':'جارٍ طلب إذن GPS وبدء الشيفت…');
-        const generation=generationRef.current;
-        watchRef.current=navigator.geolocation.watchPosition(pos=>{
-            if(!activeRef.current||generation!==generationRef.current)return;
-            lastRef.current=pos;send(pos);
-        },error=>{
-            if(!activeRef.current||generation!==generationRef.current)return;
-            if(error.code===1){
-                activeRef.current=false;generationRef.current++;setActive(false);save(false);cleanup();
-                setMessage('تم رفض صلاحية الموقع. شغّل GPS واسمح بالموقع من إعدادات المتصفح، وبعدها اضغط بدء الشيفت.');
-                void apiFetch('/api/data',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({op:'location_stop'})}).catch(()=>{});
-            }else{setMessage('إشارة GPS ضعيفة أو مؤقتًا غير متاحة؛ هنحاول تلقائيًا. آخر موقع معروف للإدارة له وقت تحديث واضح.');}
+    const track=()=>{
+        if(activeRef.current||!navigator.geolocation?.watchPosition)return;
+        activeRef.current=true;
+        watchRef.current=navigator.geolocation.watchPosition(pos=>{lastRef.current=pos;send(pos);},error=>{
+            if(error.code===1){cleanup();setMessage('الموقع غير مسموح. الشيفت مسجّل، لكن لازم تسمح باستخدام GPS عشان الإدارة تتابع موقعك.');}
+            else setMessage('إشارة GPS غير متاحة مؤقتًا؛ الشيفت ما زال شغّال.');
         },{enableHighAccuracy:true,timeout:20000,maximumAge:10000});
         timerRef.current=setInterval(()=>{
-           if(!activeRef.current)return;
-           const last=lastRef.current;
-           if(last&&Date.now()-Number(last.timestamp||0)<=45000){send(last);return;}
-           if(navigator.geolocation?.getCurrentPosition){
-             navigator.geolocation.getCurrentPosition(pos=>{
-               if(!activeRef.current||generation!==generationRef.current)return;
-               lastRef.current=pos;send(pos,true);
-             },()=>{if(activeRef.current&&generation===generationRef.current)setMessage('منتظر قراءة GPS جديدة؛ آخر موقع في الإدارة مش هيتعرض كموقع مباشر.');},
-             {enableHighAccuracy:true,timeout:15000,maximumAge:5000});
-           }
+            if(!activeRef.current)return;
+            const p=lastRef.current;
+            if(p&&Date.now()-Number(p.timestamp||0)<45000){send(p);return;}
+            navigator.geolocation?.getCurrentPosition(x=>{lastRef.current=x;send(x);},()=>{},{enableHighAccuracy:true,timeout:15000,maximumAge:5000});
         },30000);
     };
-    useEffect(()=>{
-      if(saved())start(true);
-      return()=>{activeRef.current=false;generationRef.current++;cleanup();};
-    },[driverId]);
-    return React.createElement("div",{className:"shift-button-wrap"},
-      React.createElement("button",{type:"button",onClick:active?stop:()=>start(false),disabled:busy,
-        className:active?"shift-button shift-button-stop":"shift-button shift-button-start",
-        "aria-label":active?"اقفل الشيفت":"ابدأ الشيفت",
-        title:message||undefined
-      },active?"اقفل الشيفت":"ابدأ الشيفت")
+    useEffect(()=>{setShift(serverShift||null);},[serverShift?.id,serverShift?.started_at]);
+    useEffect(()=>{const t=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(t);},[]);
+    useEffect(()=>{if(shift)track();else cleanup();return cleanup;},[driverId,shift?.id]);
+    const start=async()=>{
+        if(busy||shift)return;
+        setBusy(true);setMessage('');
+        try{const data=await request({op:'shift_start'});setShift(data.shift);onShiftChange?.();track();}
+        catch(e){setMessage(e.message||'تعذر بدء الشيفت');}
+        finally{setBusy(false);}
+    };
+    const stop=async()=>{
+        if(busy||!shift||remaining>0)return;
+        setBusy(true);setMessage('');
+        try{const data=await request({op:'shift_stop'});cleanup();setShift(null);onShiftChange?.();}
+        catch(e){setMessage(e.message||'تعذر إنهاء الشيفت');}
+        finally{setBusy(false);}
+    };
+    return React.createElement('div',{className:'shift-button-wrap',style:{gap:12,flexWrap:'wrap'}},
+        React.createElement('button',{type:'button',onClick:shift?stop:start,disabled:busy||!!shift&&remaining>0,
+          className:shift?'shift-button shift-button-stop':'shift-button shift-button-start'},shift?'اقفل الشيفت':'ابدأ الشيفت'),
+        shift&&remaining>0&&React.createElement('small',{role:'status'},'متبقي على إغلاق الشيفت '+countdown),
+        message&&React.createElement('small',{role:'alert',style:{color:'#bc4550'}},message)
     );
 }
 function DriverMonitor({ drivers, shipments, events, locations, day, setDay, refresh }) { const shipmentMap = new Map(shipments.map((s) => [s.id, s])); const dayEvents = events.filter((e) => e.driver_id && businessDate(e.created) === day && shipmentMap.has(e.shipment_id)).sort((a, b) => b.created.localeCompare(a.created)); const at = (x) => new Date(x).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }); const state = (loc) => { if (!loc)
