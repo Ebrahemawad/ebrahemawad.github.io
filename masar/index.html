@@ -580,7 +580,9 @@ function CompanyDaily({ shipments, payments, day }) { let v = companyDay(shipmen
                 React.createElement("b", null, fmt(v.toCompanies))),
             React.createElement("div", null,
                 React.createElement("small", null, "\u0641\u0631\u0642 \u062D\u0631\u0643\u0629 \u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0641\u064A \u0627\u0644\u064A\u0648\u0645"),
-                React.createElement("b", null, fmt(v.netCash)))),
+                React.createElement("b", null, fmt(v.netCash))),
+            React.createElement("div", null,React.createElement("small", null,"استلام رسوم التوصيل من الشركات"),React.createElement("b",null,fmt(v.fromCompanies||0))),
+            React.createElement("div", null,React.createElement("small", null,"صرف عمولات للمناديب"),React.createElement("b",null,fmt(v.toDrivers||0)))),
         React.createElement("p", { className: "muted" }, "\u0641\u0631\u0642 \u0627\u0644\u062D\u0631\u0643\u0629 = \u0627\u0644\u0645\u0633\u062A\u0644\u0645 \u0645\u0646 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u2212 \u0627\u0644\u0645\u062F\u0641\u0648\u0639 \u0644\u0644\u0634\u0631\u0643\u0627\u062A \u062E\u0644\u0627\u0644 \u0627\u0644\u064A\u0648\u0645\u060C \u0648\u0645\u0634 \u0631\u0635\u064A\u062F \u0627\u0644\u062E\u0632\u0646\u0629 \u0627\u0644\u0643\u0627\u0645\u0644.")),
     React.createElement("div", { style: { height: 18 } })); }
 
@@ -593,7 +595,7 @@ function returnItemValue(s){
 function custodySummary(shipments,payments,handovers,driverId){
  const sh=shipments.filter(s=>driverId==null||Number(s.driver_id)===Number(driverId));
  const byDriver=driverId!=null;
- const paymentList=payments.filter(p=>p.type==='driver'&&(!byDriver||Number(p.party_id)===Number(driverId)));
+ const paymentList=payments.filter(p=>['driver','driver_payout'].includes(p.type)&&(!byDriver||Number(p.party_id)===Number(driverId)));
  const handoverIds=new Set(handovers.filter(x=>!x.released_at&&(!byDriver||Number(x.driver_id)===Number(driverId))).map(x=>Number(x.shipment_id)));
  const totals=arr=>arr.reduce((n,x)=>n+(Number(x)||0),0);
  const active=sh.filter(s=>['new','transit'].includes(s.status));
@@ -910,7 +912,7 @@ catch {
             React.createElement("label", { className: "checkline" },
                 React.createElement("input", { type: "checkbox", checked: !!p.status, disabled: busy, onChange: e => act({ op: 'driver_access', id: d.id, account: !!p.account, status: e.target.checked }) }),
                 " \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u062D\u0627\u0644\u0627\u062A")); }) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u0645\u0646\u0627\u062F\u064A\u0628 \u0645\u0636\u0627\u0641\u064A\u0646", detail: "\u0623\u0636\u0641 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628 \u0645\u0646 \u0635\u0641\u062D\u0629 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628." }))); }
-function AccountsPanel({ entries, payments, shipments, day, setDay, act, busy, canEdit }) { const [type, setType] = useState('capital'), [amount, setAmount] = useState(''), [note, setNote] = useState(''); const sum = (a, f) => a.reduce((t, x) => t + f(x), 0); const byDay = (x) => businessDate(x.created) <= day; const cash = entries.filter(byDay), pay = payments.filter(byDay), delivered = shipments.filter((s) => isFinal(s) && businessDate(s.delivered) <= day); const capital = sum(cash.filter((x) => x.type === 'capital'), (x) => x.amount), other = sum(cash.filter((x) => x.type === 'income'), (x) => x.amount), expenses = sum(cash.filter((x) => x.type === 'expense'), (x) => x.amount), from = sum(pay.filter((x) => x.type === 'driver'), (x) => x.amount), to = sum(pay.filter((x) => x.type === 'company'), (x) => x.amount); const gross = sum(delivered, collected), earned = sum(delivered, (x) => x.delivery - x.driver_fee), driversDue = sum(delivered, driverDue) - from, companiesDue = sum(delivered, companyDue) - to; const today = day === businessDate(new Date()); return React.createElement(React.Fragment, null,
+function AccountsPanel({ entries, payments, shipments, day, setDay, act, busy, canEdit }) { const [type, setType] = useState('capital'), [amount, setAmount] = useState(''), [note, setNote] = useState(''); const sum = (a, f) => a.reduce((t, x) => t + f(x), 0); const byDay = (x) => businessDate(x.created) <= day; const cash = entries.filter(byDay), pay = payments.filter(byDay), delivered = shipments.filter((s) => isFinal(s) && businessDate(s.delivered) <= day); const capital = sum(cash.filter((x) => x.type === 'capital'), (x) => x.amount), other = sum(cash.filter((x) => x.type === 'income'), (x) => x.amount), expenses = sum(cash.filter((x) => x.type === 'expense'), (x) => x.amount), from = sum(pay.filter((x) => x.type === 'driver'), (x) => x.amount), to = sum(pay.filter((x) => x.type === 'company'), (x) => x.amount), fromCompany = sum(pay.filter((x) => x.type === 'company_receipt'), (x) => x.amount), toDriver=sum(pay.filter((x)=>x.type==='driver_payout'),x=>x.amount); const gross = sum(delivered, collected), earned = sum(delivered, (x) => x.delivery - x.driver_fee), driversDue = sum(delivered, driverDue) - from + toDriver, companiesDue = sum(delivered, companyDue) - to, companyReceivable=sum(delivered,companyCharge)-fromCompany; const today = day === businessDate(new Date()); return React.createElement(React.Fragment, null,
     React.createElement(DateSelect, { day: day, setDay: setDay }),
     React.createElement("div", { className: "card" },
         React.createElement("div", { className: "cardhead" },
@@ -920,16 +922,18 @@ function AccountsPanel({ entries, payments, shipments, day, setDay, act, busy, c
         React.createElement("div", { className: "moneygrid" },
             React.createElement("div", { className: "highlight" },
                 React.createElement("small", null, "\u0631\u0635\u064A\u062F \u0627\u0644\u062E\u0632\u0646\u0629 \u0627\u0644\u0645\u062D\u0633\u0648\u0628"),
-                React.createElement("b", null, fmt(capital + other - expenses + from - to))),
+                React.createElement("b", null, fmt(capital + other - expenses + from + fromCompany - to - toDriver))),
             React.createElement("div", null,
                 React.createElement("small", null, "\u0631\u0623\u0633 \u0627\u0644\u0645\u0627\u0644 \u0627\u0644\u0645\u0633\u062C\u0644"),
                 React.createElement("b", null, fmt(capital))),
             React.createElement("div", null,
                 React.createElement("small", null, "\u0645\u0627 \u0648\u0631\u062F \u0645\u0646 \u0627\u0644\u0645\u0646\u0627\u062F\u064A\u0628"),
                 React.createElement("b", null, fmt(from))),
+            React.createElement('div',null,React.createElement('small',null,'متحصلات الشركات من رسوم التوصيل'),React.createElement('b',null,fmt(fromCompany))),
             React.createElement("div", null,
                 React.createElement("small", null, "\u0645\u0627 \u062F\u064F\u0641\u0639 \u0644\u0644\u0634\u0631\u0643\u0627\u062A"),
                 React.createElement("b", null, fmt(to))),
+            React.createElement('div',null,React.createElement('small',null,'مدفوعات عمولات المناديب'),React.createElement('b',null,fmt(toDriver))),
             React.createElement("div", null,
                 React.createElement("small", null, "\u0625\u064A\u0631\u0627\u062F\u0627\u062A \u0623\u062E\u0631\u0649 \u0646\u0642\u062F\u064A\u0629"),
                 React.createElement("b", null, fmt(other))),
@@ -945,6 +949,7 @@ function AccountsPanel({ entries, payments, shipments, day, setDay, act, busy, c
             React.createElement("div", null,
                 React.createElement("small", null, "\u0627\u0644\u0645\u062A\u0628\u0642\u064A \u0644\u0644\u0634\u0631\u0643\u0627\u062A"),
                 React.createElement("b", null, fmt(companiesDue))),
+            React.createElement('div',null,React.createElement('small',null,'رسوم توصيل مستحقة على الشركات'),React.createElement('b',null,fmt(companyReceivable))),
             React.createElement("div", null,
                 React.createElement("small", null, "\u062F\u062E\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0627\u0644\u0645\u0633\u062A\u062D\u0642"),
                 React.createElement("b", null, fmt(earned))),
