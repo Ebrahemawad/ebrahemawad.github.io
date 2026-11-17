@@ -46,16 +46,54 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-      - name: Compile APK
+      - name: Load original signing certificate if configured
+        env:
+          MASAR_KEYSTORE_BASE64: ${{ secrets.MASAR_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          if [ -n "$MASAR_KEYSTORE_BASE64" ]; then
+            printf '%s' "$MASAR_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/masar-original.keystore"
+            echo "MASAR_ORIGINAL_KEYSTORE=$RUNNER_TEMP/masar-original.keystore" >> "$GITHUB_ENV"
+          else
+            echo "Original signing key not configured. This build will NOT update the installed Android app."
+          fi
+      - name: Compile existing Masar Android app
+        env:
+          MASAR_STORE_PASSWORD: ${{ secrets.MASAR_STORE_PASSWORD }}
+          MASAR_KEY_ALIAS: ${{ secrets.MASAR_KEY_ALIAS }}
+          MASAR_KEY_PASSWORD: ${{ secrets.MASAR_KEY_PASSWORD }}
         run: gradle --no-daemon --stacktrace :app:assembleDebug
-      - name: Rename distributable
+      - name: Verify same signing identity and application ID
+        shell: bash
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SIGNER="$SDK/build-tools/35.0.0/apksigner"
+          AAPT="$SDK/build-tools/35.0.0/aapt"
+          test -x "$SIGNER"
+          test -x "$AAPT"
+          "$SIGNER" verify --print-certs "$APK"
+          CERT=$("$SIGNER" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+          EXPECTED="5446421afab06e33c77aef8f7ac7047092958c3f7eff3529e114c3c8ff9cced9"
+          PACKAGE=$("$AAPT" dump badging "$APK" | sed -n "s/^package: name='\([^']*\)'.*/\1/p" | head -1)
+          echo "Package ID: $PACKAGE"
+          if [ "$PACKAGE" = "com.masar.shipping.debug" ] && [ "$CERT" = "$EXPECTED" ]; then
+            echo "MATCHES_INSTALLED_APP=true" >> "$GITHUB_ENV"
+            echo "Matching installed APK package and signing certificate."
+          else
+            echo "MATCHES_INSTALLED_APP=false" >> "$GITHUB_ENV"
+            echo "::warning::This APK cannot update the installed APK. Matching package AND original signing key are required."
+          fi
+      - name: Export build for inspection
+        shell: bash
         run: cp app/build/outputs/apk/debug/app-debug.apk ../Masar-Android-v0.2.0-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Masar-Android-APK
+          name: Masar-Android-APK-signature-check-required
           path: Masar-Android-v0.2.0-debug.apk
           if-no-files-found: error
-      - name: Publish download as GitHub release
+      - name: Publish only a verified in-place update
+        if: env.MATCHES_INSTALLED_APP == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         working-directory: .
@@ -63,5 +101,5 @@ jobs:
           if gh release view "masar-android-v0.2.0-debug" >/dev/null 2>&1; then
             gh release upload "masar-android-v0.2.0-debug" "Masar-Android-v0.2.0-debug.apk" --clobber
           else
-            gh release create "masar-android-v0.2.0-debug" "Masar-Android-v0.2.0-debug.apk" --title "Masar Android v0.2.0 (Test APK)" --notes "Android test APK for Masar Shipping. Requires internet. Location sharing operates while the app is in the foreground. Do not treat this debug build as a production-grade delivery or guaranteed background tracking."
+            gh release create "masar-android-v0.2.0-debug" "Masar-Android-v0.2.0-debug.apk" --title "Masar Android v0.2.0 - verified in-place update" --notes "Signature and Android application ID verified against the user-supplied installed APK. Delivery reminders require Android notification permission and alarms configuration."
           fi
