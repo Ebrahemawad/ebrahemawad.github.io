@@ -10,7 +10,7 @@ window.MasarExportDriverOrders=async function(driver,shipments){
   if(!driver||!shipments||!shipments.length)throw new Error("اختر مندوبًا لديه شحنات أولًا");
   if(typeof window.html2pdf!=="function")throw new Error("مكتبة إنشاء PDF لم تُحمّل؛ تأكد من الاتصال بالإنترنت");
   var box=document.createElement("div");
-  box.lang="ar";box.dir="rtl";box.style.cssText="position:fixed;left:-12000px;top:0;width:950px;padding:32px;background:#fff;color:#142746;direction:rtl;font-family:Cairo,Tahoma,Arial,sans-serif;box-sizing:border-box;";
+  box.lang="ar";box.dir="rtl";box.style.cssText="position:relative;left:auto;top:auto;width:950px;padding:32px;background:#fff;color:#142746;direction:rtl;font-family:Cairo,Tahoma,Arial,sans-serif;box-sizing:border-box;";
   var title=document.createElement("h2");title.textContent="مَسار | كشف أوردرات المندوب";title.style.cssText="font-size:25px;color:#265dd0;border-bottom:3px solid #265dd0;padding-bottom:12px;margin:0 0 12px;";box.appendChild(title);
   var meta=document.createElement("p");meta.textContent="المندوب: "+driver.name+" | الهاتف: "+(driver.phone||"—")+" | عدد الأوردرات: "+shipments.length+" | تاريخ التصدير: "+new Date().toLocaleDateString("ar-EG");meta.style="font-size:13px;margin:0 0 18px";box.appendChild(meta);
   var table=document.createElement("table");table.style.cssText="width:100%;border-collapse:collapse;table-layout:fixed;direction:rtl;font-size:11px;";
@@ -26,13 +26,27 @@ window.MasarExportDriverOrders=async function(driver,shipments){
   });
   table.appendChild(body);box.appendChild(table);
   var footer=document.createElement("p");footer.textContent="عدد الشحنات: "+shipments.length+" | إجمالي قيمة الشحنات: "+(sum/100).toFixed(2)+" ج.م";footer.style.cssText="font-size:12px;margin-top:18px;border-top:1px solid #cbd5e7;padding-top:12px;";box.appendChild(footer);
-  document.body.appendChild(box);
+  // Keep the source off-screen, but never copy that off-screen positioning into
+  // html2pdf's cloned document (otherwise html2canvas captures a blank page).
+  var staging=document.createElement("div");
+  staging.style.cssText="position:fixed;left:-12000px;top:0;width:1000px;pointer-events:none;overflow:visible;";
+  staging.appendChild(box);
+  document.body.appendChild(staging);
   try{
     if(document.fonts&&document.fonts.ready)await document.fonts.ready;
     var name="Masar-Orders-"+driver.id+"-"+new Date().toISOString().slice(0,10)+".pdf";
-    var doc=await window.html2pdf().set({margin:7,image:{type:"jpeg",quality:0.95},html2canvas:{scale:1.5,useCORS:true,backgroundColor:"#fff"},jsPDF:{unit:"mm",format:"a4",orientation:"landscape"},pagebreak:{mode:["css","legacy"],avoid:["tr"]}}).from(box).toPdf().get("pdf");
+    var worker=window.html2pdf().set({margin:7,image:{type:"jpeg",quality:0.95},html2canvas:{scale:1.5,useCORS:true,backgroundColor:"#fff",scrollX:0,scrollY:0},jsPDF:{unit:"mm",format:"a4",orientation:"landscape"},pagebreak:{mode:["css","legacy"],avoid:["tr"]}}).from(box);
+    var canvas=await worker.toCanvas().get("canvas");
+    if(!canvas||canvas.width<50||canvas.height<50)throw new Error("تعذر إنشاء محتوى PDF");
+    // Reject blank renders rather than saving a deceptively empty PDF.
+    var ctx=canvas.getContext("2d"), pixels=ctx.getImageData(0,0,Math.min(canvas.width,1400),Math.min(canvas.height,360)).data, ink=0;
+    for(var p=0;p<pixels.length;p+=16){
+      if(pixels[p]<215||pixels[p+1]<215||pixels[p+2]<215)ink++;
+    }
+    if(ink<25)throw new Error("تصدير PDF طلع فارغ، حاول مرة أخرى");
+    var doc=await worker.toPdf().get("pdf");
     if(window.MasarAndroid&&typeof window.MasarAndroid.savePdf==="function")window.MasarAndroid.savePdf(doc.output("datauristring"),name);
     else doc.save(name);
-  }finally{box.remove();}
+  }finally{staging.remove();}
 };
 })();
