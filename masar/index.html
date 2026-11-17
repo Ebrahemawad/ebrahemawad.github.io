@@ -412,6 +412,9 @@ function Dashboard({ user }) {
                 React.createElement(CustodySummary,{shipments:ss,payments:payments,handovers:data.returnHandovers||[],driverId:null,label:'مراجعة إجمالي العهدة قبل التسوية'}),
                 React.createElement(ReturnHandoverPanel,{shipments:ss,drivers:drivers,handovers:data.returnHandovers||[],act:act,busy:busy,canEdit:allowed('settlements','edit')}),
                 React.createElement(DateSelect, { day: day, setDay: setDay }),
+                React.createElement("div",{className:"grid"},
+                   React.createElement(SpecialSettlement,{type:"company_receipt",parties:companies,shipments:ss,payments,day,act,busy,canEdit:allowed('settlements','edit')}),
+                   React.createElement(SpecialSettlement,{type:"driver_payout",parties:drivers,shipments:ss,payments,day,act,busy,canEdit:allowed('settlements','edit')})),
                 React.createElement(CompanyDaily, { shipments: ss, payments: payments, day: day }),
                 React.createElement('button',{className:'subtle',style:{marginBottom:18},onClick:()=>exportDailyExcel(drivers,ss,payments,day)},'↓ تصدير الحساب اليومي Excel'),
                 React.createElement("div", { className: "hint top-hint" }, "\u0627\u0644\u0631\u0635\u064A\u062F \u0627\u0644\u0645\u0631\u062D\u0651\u0644 \u064A\u0634\u0645\u0644 \u0645\u0627 \u0642\u0628\u0644 \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0645\u062E\u062A\u0627\u0631. \u0627\u0644\u0634\u062D\u0646\u0627\u062A \u0627\u0644\u0645\u0633\u0644\u0651\u0645\u0629 \u062A\u062A\u062D\u0633\u0628 \u0641\u064A \u064A\u0648\u0645 \u0627\u0644\u062A\u0633\u0644\u064A\u0645\u060C \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0627\u062A \u0641\u064A \u064A\u0648\u0645 \u062A\u0633\u062C\u064A\u0644\u0647\u0627. \u0643\u0644 \u0627\u0644\u062A\u0648\u0627\u0631\u064A\u062E \u0628\u062A\u0648\u0642\u064A\u062A \u0627\u0644\u0642\u0627\u0647\u0631\u0629. \u0645\u0628\u0627\u0644\u063A \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0645\u062D\u0633\u0648\u0628\u0629 \u0628\u0639\u062F \u062E\u0635\u0645 \u0646\u0635\u064A\u0628\u0647\u060C \u0648\u0627\u0644\u062A\u0633\u0648\u064A\u0629 \u0644\u0627 \u062A\u064F\u0633\u062C\u0651\u0644 \u0625\u0644\u0627 \u0628\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u064A\u0648\u0645."),
@@ -431,8 +434,8 @@ function Dashboard({ user }) {
                                     React.createElement("th", null, "\u0627\u0644\u0628\u064A\u0627\u0646"),
                                     React.createElement("th", null, "\u0627\u0644\u062A\u0648\u0642\u064A\u062A"))),
                             React.createElement("tbody", null, payments.filter(p => businessDate(p.created) === day).map(p => React.createElement("tr", { key: p.id },
-                                React.createElement("td", null, p.type === 'driver' ? 'استلام من مندوب' : 'دفع لشركة'),
-                                React.createElement("td", null, p.type === 'driver' ? driverName(p.party_id) : companyName(p.party_id)),
+                                React.createElement("td", null, p.type === 'driver' ? 'استلام من مندوب' : p.type==='company_receipt'?'استلام رسوم من الشركة':p.type==='driver_payout'?'صرف للمندوب':'دفع لشركة'),
+                                React.createElement("td", null, ['driver','driver_payout'].includes(p.type) ? driverName(p.party_id) : companyName(p.party_id)),
                                 React.createElement("td", null, fmt(p.amount)),
                                 React.createElement("td", null, p.note || '—'),
                                 React.createElement("td", null, new Date(p.created).toLocaleTimeString('ar-EG', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit' }))))))) : React.createElement(Empty, { text: "\u0645\u0641\u064A\u0634 \u062A\u0633\u0648\u064A\u0627\u062A \u0641\u064A \u0627\u0644\u064A\u0648\u0645 \u062F\u0647", detail: "\u0639\u0645\u0644\u064A\u0627\u062A \u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645 \u0648\u0627\u0644\u062F\u0641\u0639 \u0627\u0644\u0645\u0633\u062C\u0644\u0629 \u0641\u064A \u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0647\u062A\u0638\u0647\u0631 \u0647\u0646\u0627." })))));
@@ -808,6 +811,40 @@ function Settlement({ title, type, parties, shipments, payments, closures = [], 
     React.createElement("button", { disabled: !party || !amount || busy || !today || !canEdit || closed, onClick: () => act({ op: 'payment', type, partyId: party, amount: cents(amount), note }, () => { setAmount(''); setNote(''); }) }, type === 'driver' ? 'تسجيل استلام من المندوب' : 'تسجيل دفع للشركة'),
     closed && React.createElement("p", { className: "muted" }, "\u064A\u0648\u0645 \u0627\u0644\u0645\u0646\u062F\u0648\u0628 \u0645\u0642\u0641\u0648\u0644\u061B \u0635\u0627\u062D\u0628 \u0627\u0644\u0634\u0631\u0643\u0629 \u064A\u0642\u062F\u0631 \u064A\u0639\u064A\u062F \u0641\u062A\u062D\u0647 \u0628\u0633\u0628\u0628 \u0645\u0633\u062C\u0644."),
     !today && React.createElement("p", { className: "muted" }, "\u0644\u0644\u062A\u0633\u062C\u064A\u0644 \u0627\u062E\u062A\u0627\u0631 \u062A\u0627\u0631\u064A\u062E \u0627\u0644\u064A\u0648\u0645\u061B \u0644\u0627 \u064A\u0645\u0643\u0646 \u062A\u0633\u062C\u064A\u0644 \u062A\u0633\u0648\u064A\u0629 \u0628\u0623\u062B\u0631 \u0631\u062C\u0639\u064A.")); }
+
+function SpecialSettlement({type,parties,shipments,payments,day,act,busy,canEdit}){
+ const [party,setParty]=useState(''),[amount,setAmount]=useState(''),[note,setNote]=useState('');
+ const isCompany=type==='company_receipt';
+ const lines=shipments.filter(s=>Number(isCompany?s.company_id:s.driver_id)===Number(party));
+ const entries=payments.filter(p=>Number(p.party_id)===Number(party));
+ const charge=lines.reduce((v,s)=>v+companyCharge(s),0);
+ const received=entries.filter(p=>p.type==='company_receipt').reduce((v,p)=>v+Number(p.amount),0);
+ const due=lines.reduce((v,s)=>v+driverDue(s),0);
+ const remitted=entries.filter(p=>p.type==='driver').reduce((v,p)=>v+Number(p.amount),0);
+ const paid=entries.filter(p=>p.type==='driver_payout').reduce((v,p)=>v+Number(p.amount),0);
+ const balance=isCompany?charge-received:Math.max(0,-(due-remitted+paid));
+ const today=day===businessDate(new Date());
+ return React.createElement('div',{className:'card'},
+  React.createElement('h3',null,isCompany?'تحصيل رسوم التوصيل من الشركة':'صرف مستحقات المندوب'),
+  React.createElement('p',null,isCompany?'عند رفض العميل دفع رسوم التوصيل، تُسجّل مديونية على الشركة. المبلغ لا يدخل الخزنة إلا بعد استلامه.':'إذا كانت عمولة المندوب أكبر من الكاش المطلوب منه، يُصرف له الفرق بحركة موثقة.'),
+  React.createElement('label',null,isCompany?'الشركة':'المندوب',
+   React.createElement('select',{value:party,onChange:e=>setParty(e.target.value)},
+    React.createElement('option',{value:''},'اختر الحساب'),
+    parties.map(x=>React.createElement('option',{key:x.id,value:x.id},x.name)))),
+  React.createElement('div',{className:'moneygrid'},
+   React.createElement('div',null,React.createElement('small',null,isCompany?'رسوم مستحقة على الشركة':'عمولة مستحقة للمندوب بعد التسوية'),React.createElement('b',null,fmt(party?balance:0))),
+   isCompany&&React.createElement('div',null,React.createElement('small',null,'تم تحصيله من الشركة'),React.createElement('b',null,fmt(party?received:0)))),
+  React.createElement('label',null,'المبلغ بالجنيه',
+    React.createElement('input',{type:'number',min:'0.01',step:'0.01',value:amount,onChange:e=>setAmount(e.target.value)})),
+  React.createElement('label',null,'بيان العملية',
+    React.createElement('input',{value:note,onChange:e=>setNote(e.target.value),placeholder:isCompany?'استلام رسوم الزيارة من الشركة':'صرف عمولة المندوب'})),
+  React.createElement('button',{disabled:!canEdit||busy||!today||!party||!amount||!Number.isSafeInteger(cents(amount))||cents(amount)<=0||cents(amount)>balance,
+    onClick:()=>{if(!confirm('تأكيد '+(isCompany?'استلام مبلغ من الشركة':'صرف مبلغ للمندوب')+' بقيمة '+fmt(cents(amount))+'؟'))return;
+    act({op:'payment',type,partyId:Number(party),amount:cents(amount),note:note.trim()},()=>{setAmount('');setNote('')});}},
+    isCompany?'تسجيل استلام من الشركة':'تسجيل صرف للمندوب')
+ );
+}
+
 const accessAreas = [['shipments', 'الشحنات وتوزيعها واستيرادها'], ['companies', 'الشركات وأسعار التوصيل'], ['drivers', 'المناديب وبياناتهم'], ['settlements', 'التسويات والحسابات اليومية'], ['accounts', 'الخزنة وحسابات الشركة']];
 function UsersPanel({ users, drivers, driverPermissions, busy, act }) { const [editing, setEditing] = useState(null), [name, setName] = useState(''), [email, setEmail] = useState(''), [password, setPassword] = useState(''), [active, setActive] = useState(true), [permissions, setPermissions] = useState({}); const reset = () => { setEditing(null); setName(''); setEmail(''); setPassword(''); setActive(true); setPermissions({}); }; const load = (x) => { setEditing(x); setName(x.name); setEmail(x.username || ''); setPassword(''); setActive(!!x.active); try {
     setPermissions(JSON.parse(x.permissions));
