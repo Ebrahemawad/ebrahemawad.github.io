@@ -49,19 +49,19 @@ jobs:
       - name: Compile APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
       - name: Rename distributable
-        run: cp app/build/outputs/apk/debug/app-debug.apk ../Masar-Android-v0.1.0-debug.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk ../Masar-Android-v0.2.0-debug.apk
       - uses: actions/upload-artifact@v4
         with:
           name: Masar-Android-APK
-          path: Masar-Android-v0.1.0-debug.apk
+          path: Masar-Android-v0.2.0-debug.apk
           if-no-files-found: error
       - name: Publish download as GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         working-directory: .
         run: |
-          if gh release view "masar-android-v0.1.0-debug" >/dev/null 2>&1; then
-            gh release upload "masar-android-v0.1.0-debug" "Masar-Android-v0.1.0-debug.apk" --clobber
+          if gh release view "masar-android-v0.2.0-debug" >/dev/null 2>&1; then
+            gh release upload "masar-android-v0.2.0-debug" "Masar-Android-v0.2.0-debug.apk" --clobber
           else
-            gh release create "masar-android-v0.1.0-debug" "Masar-Android-v0.1.0-debug.apk" --title "Masar Android v0.1.0 (Test APK)" --notes "Android test APK for Masar Shipping. Requires internet. Location sharing operates while the app is in the foreground. Do not treat this debug build as a production-grade delivery or guaranteed background tracking."
+            gh release create "masar-android-v0.2.0-debug" "Masar-Android-v0.2.0-debug.apk" --title "Masar Android v0.2.0 (Test APK)" --notes "Android test APK for Masar Shipping. Requires internet. Location sharing operates while the app is in the foreground. Do not treat this debug build as a production-grade delivery or guaranteed background tracking."
           fi
