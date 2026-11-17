@@ -44,7 +44,9 @@
 .driver-edit .formactions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 @media(max-width:1050px){.custody-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:530px){.custody-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.custody-item{padding:10px}.custody-item b{font-size:16px}}
-.saved-status{display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#26795b;background:#e8f8ef;padding:7px 11px;border-radius:9px;font-weight:700;white-space:nowrap}</style></head><body><div id="root"><div class="loading">جاري تحميل مَسار...</div></div>
+.saved-status{display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#26795b;background:#e8f8ef;padding:7px 11px;border-radius:9px;font-weight:700;white-space:nowrap}/* Simple single-button courier shift */
+.shift-button-wrap{display:flex;align-items:center;justify-content:flex-start;margin:0 0 18px}.shift-button{padding:12px 27px;min-width:154px;border-radius:10px;font-weight:800;box-shadow:0 4px 10px #19345712}.shift-button-stop{background:#fff;color:#bd4b46;border:1px solid #e8babb}.shift-button-start{background:#275ddb;color:white}
+</style></head><body><div id="root"><div class="loading">جاري تحميل مَسار...</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
@@ -1163,14 +1165,12 @@ function LocationShare({driverId}) {
       if(saved())start(true);
       return()=>{activeRef.current=false;generationRef.current++;cleanup();};
     },[driverId]);
-    return React.createElement("div",{className:"location-share"},
-      React.createElement("div",null,
-        React.createElement("b",null,"موقع المندوب أثناء الشيفت"),
-        React.createElement("p",null,active?"التتبع شغال تلقائيًا أثناء فتح مسار. يظهر آخر تحديث للإدارة، ويمكنك إنهاء الشيفت في أي وقت.":"التتبع متوقف. اضغط «بدء الشيفت والموقع» واسمح باستخدام GPS؛ لن يبدأ بدون موافقتك."),
-        React.createElement("small",null,"التتبع في المتصفح قد يتوقف عند قفل الشاشة أو خروج مسار للخلفية؛ ده مش تتبع خلفية مضمون."),
-        message&&React.createElement("small",{role:"status"},message)),
-      active?React.createElement("button",{onClick:stop,disabled:busy,className:"danger-outline"},"إنهاء الشيفت وإيقاف الموقع"):
-        React.createElement("button",{onClick:()=>start(false),disabled:busy},"بدء الشيفت والموقع")
+    return React.createElement("div",{className:"shift-button-wrap"},
+      React.createElement("button",{type:"button",onClick:active?stop:()=>start(false),disabled:busy,
+        className:active?"shift-button shift-button-stop":"shift-button shift-button-start",
+        "aria-label":active?"اقفل الشيفت":"ابدأ الشيفت",
+        title:message||undefined
+      },active?"اقفل الشيفت":"ابدأ الشيفت")
     );
 }
 function DriverMonitor({ drivers, shipments, events, locations, day, setDay, refresh }) { const shipmentMap = new Map(shipments.map((s) => [s.id, s])); const dayEvents = events.filter((e) => e.driver_id && businessDate(e.created) === day && shipmentMap.has(e.shipment_id)).sort((a, b) => b.created.localeCompare(a.created)); const at = (x) => new Date(x).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }); const state = (loc) => { if (!loc)
