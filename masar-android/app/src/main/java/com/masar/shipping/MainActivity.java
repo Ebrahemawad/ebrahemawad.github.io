@@ -8,6 +8,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
+import android.util.Base64;
+import java.io.OutputStream;
 import android.webkit.DownloadListener;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
@@ -24,6 +27,9 @@ public class MainActivity extends Activity {
     private static final String APP_HOST = "ebrahemawad.github.io";
     private static final int LOCATION_REQ = 707;
     private static final int FILE_REQ = 708;
+    private static final int PDF_SAVE_REQ = 709;
+    private byte[] pdfPending;
+    private String pdfSuggestedName;
     private WebView web;
     private GeolocationPermissions.Callback gpsCallback;
     private String gpsOrigin;
@@ -43,6 +49,46 @@ public class MainActivity extends Activity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setSupportMultipleWindows(false);
+        // Saving PDFs requires the user to approve the target document in Android's file picker.
+        // JS interface is intentionally limited to prompting a save; it cannot read local files.
+        web.addJavascriptInterface(new Object() {
+            @JavascriptInterface public void savePdf(String dataUri, String fileName) {
+                if (dataUri == null || !dataUri.startsWith("data:application/pdf;") ||
+                    dataUri.length() > 16 * 1024 * 1024) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "ملف PDF غير صالح أو حجمه كبير", Toast.LENGTH_LONG).show());
+                    return;
+                }
+                try {
+                    int comma = dataUri.indexOf(',');
+                    if (comma < 0) throw new IllegalArgumentException("Invalid PDF");
+                    byte[] data = Base64.decode(dataUri.substring(comma + 1), Base64.DEFAULT);
+                    if (data.length < 5 || data[0] != '%' || data[1] != 'P' || data[2] != 'D' || data[3] != 'F') throw new IllegalArgumentException("Not a PDF");
+                    String clean = fileName == null ? "Masar-Orders.pdf" : fileName.replaceAll("[^A-Za-z0-9._-]", "_");
+                    if (!clean.toLowerCase(Locale.ROOT).endsWith(".pdf")) clean += ".pdf";
+                    final String target = clean;
+                    runOnUiThread(() -> {
+                        if (pdfPending != null) {
+                            Toast.makeText(MainActivity.this, "احفظ الملف الحالي أولًا", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        pdfPending = data;
+                        pdfSuggestedName = target;
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                            intent.addCategory(Intent.CATEGORY_OPENABLE);
+                            intent.setType("application/pdf");
+                            intent.putExtra(Intent.EXTRA_TITLE, pdfSuggestedName);
+                            startActivityForResult(intent, PDF_SAVE_REQ);
+                        } catch(Exception e) {
+                            pdfPending = null;
+                            Toast.makeText(MainActivity.this, "تعذر فتح نافذة حفظ PDF", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } catch(Exception e) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "تعذر تجهيز ملف PDF", Toast.LENGTH_LONG).show());
+                }
+            }
+        }, "MasarAndroid");
         CookieManager.getInstance().setAcceptCookie(true);
         // The site and the login service need persistent browser cookies.
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
@@ -107,6 +153,21 @@ public class MainActivity extends Activity {
     }
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PDF_SAVE_REQ) {
+            if(resultCode == RESULT_OK && data != null && data.getData() != null && pdfPending != null) {
+                try (OutputStream out = getContentResolver().openOutputStream(data.getData())) {
+                    if(out == null) throw new IllegalStateException("No output stream");
+                    out.write(pdfPending);
+                    out.flush();
+                    Toast.makeText(this, "تم حفظ ملف PDF", Toast.LENGTH_LONG).show();
+                } catch(Exception e) {
+                    Toast.makeText(this, "فشل حفظ ملف PDF", Toast.LENGTH_LONG).show();
+                }
+            }
+            pdfPending = null;
+            pdfSuggestedName = null;
+            return;
+        }
         if(requestCode==FILE_REQ && fileCallback!=null) {
             Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode,data);
             fileCallback.onReceiveValue(result);
@@ -119,6 +180,7 @@ public class MainActivity extends Activity {
     }
     @Override protected void onDestroy() {
         if(fileCallback!=null){fileCallback.onReceiveValue(null);fileCallback=null;}
+        pdfPending = null;
         if(web!=null) web.destroy();
         super.onDestroy();
     }
