@@ -14,14 +14,14 @@ window.MasarExportDriverOrders=async function(driver,shipments){
   var title=document.createElement("h2");title.textContent="مَسار | كشف أوردرات المندوب";title.style.cssText="font-size:25px;color:#265dd0;border-bottom:3px solid #265dd0;padding-bottom:12px;margin:0 0 12px;";box.appendChild(title);
   var meta=document.createElement("p");meta.textContent="المندوب: "+driver.name+" | الهاتف: "+(driver.phone||"—")+" | عدد الأوردرات: "+shipments.length+" | تاريخ التصدير: "+new Date().toLocaleDateString("ar-EG");meta.style="font-size:13px;margin:0 0 18px";box.appendChild(meta);
   var table=document.createElement("table");table.style.cssText="width:100%;border-collapse:collapse;table-layout:fixed;direction:rtl;font-size:11px;";
-  var tr=document.createElement("tr");["م","رقم الشحنة","العميل","الهاتف","العنوان","المنتج","المبلغ","الحالة"].forEach(function(n){addCell(tr,n,true)});
+  var tr=document.createElement("tr");["م","رقم الشحنة","العميل","الهاتف","العنوان","المنتج","المبلغ","الحالة المسجلة","الحالة"].forEach(function(n){addCell(tr,n,true)});
   var head=document.createElement("thead");head.appendChild(tr);table.appendChild(head);
   var body=document.createElement("tbody");var sum=0;
   shipments.forEach(function(s,i){
     var row=document.createElement("tr");row.style.pageBreakInside="avoid";
     var amount=Number(s.total)||0;sum+=amount;
     var status=(window.MasarOrderStatuses&&window.MasarOrderStatuses[s.status])||s.status;
-    [i+1,s.tracking,s.customer,s.phone,s.address,s.product,(amount/100).toFixed(2),status].forEach(function(v){addCell(row,v,false)});
+    [i+1,s.tracking,s.customer,s.phone,s.address,s.product,(amount/100).toFixed(2),status,""].forEach(function(v){addCell(row,v,false)});
     body.appendChild(row);
   });
   table.appendChild(body);box.appendChild(table);
