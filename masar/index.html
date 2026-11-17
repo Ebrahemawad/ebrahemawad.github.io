@@ -548,7 +548,7 @@ function Status({ s, act }) {
             return;
         } if (final && !confirm(value === 'returned_visit' ? 'تأكيد تحصيل '+amount+' جنيه من العميل للتوصيل؟ ستُقفل الشحنة.' : value === 'returned_unpaid' ? 'تأكيد أن العميل رفض دفع رسوم التوصيل؟ سيتم تسجيلها على الشركة بدون كاش على المندوب.' : value === 'partial' ? 'تأكيد المبلغ المحصّل شامل التوصيل؟ ستُقفل الشحنة.' : 'تأكيد تسليم الشحنة وتحصيل قيمتها كاملة؟ ستُقفل الشحنة.'))
             return; act({ op: 'status', id: s.id, status: value, notes, collected: (value === 'partial'||value === 'returned_visit') ? cents(amount) : undefined }); } }, "\u062D\u0641\u0638") : React.createElement("span", { className: "saved-status", role:"status" }, s.status === 'postponed' ? 'التأجيل محفوظ ✓' : 'الحالة محفوظة ✓')); }
-function CompanyForm({ item, save, cancel, busy }) { return React.createElement("form", { onSubmit: e => { e.preventDefault(); let f = new FormData(e.currentTarget); save({ id: item?.id, name: f.get('name'), phone: f.get('phone'), delivery: cents(f.get('delivery')), fee: item?.driver_fee ?? 0, allowPartial: f.get('allowPartial') === 'on' }); } },
+function CompanyForm({ item, save, cancel, busy }) { return React.createElement("form", { onSubmit: e => { e.preventDefault(); let f = new FormData(e.currentTarget); save({ id: item?.id, name: f.get('name'), phone: f.get('phone'), delivery: cents(f.get('delivery')), fee: 0, allowPartial: f.get('allowPartial') === 'on' }); } },
     React.createElement("label", null,
         "\u0627\u0633\u0645 \u0627\u0644\u0634\u0631\u0643\u0629",
         React.createElement("input", { name: "name", required: true, defaultValue: item?.name })),
