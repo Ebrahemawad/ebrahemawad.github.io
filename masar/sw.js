@@ -33,3 +33,21 @@ self.addEventListener('fetch',event=>{
     })
   );
 });
+self.addEventListener('push',event=>{
+ let payload={title:'مسار | تذكير توصيل',body:'اقترب موعد توصيل شحنة',url:'/masar/',tag:'masar-reminder'};
+ try{payload={...payload,...event.data?.json()}}catch{}
+ event.waitUntil(self.registration.showNotification(payload.title,{
+  body:payload.body,tag:payload.tag,icon:'/masar/app-icon.svg',badge:'/masar/app-icon.svg',
+  data:{url:payload.url},renotify:false
+ }));
+});
+self.addEventListener('notificationclick',event=>{
+ event.notification.close();
+ const path=event.notification.data?.url||'/masar/';
+ event.waitUntil((async()=>{
+  const clientsList=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  const existing=clientsList.find(c=>c.url.startsWith(self.location.origin+'/masar/'));
+  if(existing){await existing.focus();return}
+  await self.clients.openWindow(path);
+ })());
+});
