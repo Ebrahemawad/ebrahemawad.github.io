@@ -51,8 +51,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="./driver-orders-pdf.js"></script>
 <script>
 if(!window.React||!window.ReactDOM||!window.supabase||!window.XLSX){document.getElementById('root').innerHTML='<div class="login"><div class="login-card"><h2>تعذّر تحميل بعض مكونات مسار</h2><p>تحقق من اتصال الإنترنت وأعد تحميل الصفحة.</p></div></div>';}else{
+window.MasarOrderStatuses = {new:'جديدة',transit:'مع المندوب',delivered:'تم التسليم',partial:'استلام جزئي',postponed:'مؤجلة',returned:'مرتجعة',returned_visit:'مرتجع بتحصيل توصيل',returned_unpaid:'مرتجع دون تحصيل'};
 const React = window.React;
 const ReactDOM = window.ReactDOM;
 const XLSX = window.XLSX;
@@ -174,7 +177,7 @@ function Dashboard({ user }) {
     let visible = ss.filter(s => (filter === 'all' || s.status === filter) && (!shipDay || (s[shipDayField] && businessDate(s[shipDayField]) === shipDay)) && [s.tracking, s.customer, s.phone, s.address].some(x => String(x || '').toLowerCase().includes(search.toLowerCase())));
     const identityName=String(data.displayName || (data.role==='driver'?data.driver?.name:data.role==='manager'?data.staff?.name:'') || 'مستخدم');
     const identityTitle=String(data.roleTitle || (data.role==='owner'?'صاحب الشركة':data.role==='manager'?'مدير':'مندوب'));
-    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧'], ['distribution', 'توزيع الشحنات', '⇄']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈'],['returns', 'استلام المرتجعات', '↩']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(allowed('drivers') && allowed('shipments') ? [['monitor', 'متابعة المناديب', '◎']] : []), ...(actualOwner ? [['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
+    const nav = owner ? [['overview', 'نظرة عامة', '◫'], ...(allowed('shipments') ? [['shipments', 'الشحنات', '▣']] : []), ...(allowed('shipments', 'edit') ? [['import', 'استيراد Excel', '⇧'], ['distribution', 'توزيع الشحنات', '⇄']] : []), ...(allowed('companies') ? [['companies', 'الشركات', '◇']] : []), ...(allowed('drivers') ? [['drivers', 'المناديب', '♙']] : []), ...(allowed('drivers') && allowed('shipments') ? [['driver-orders', 'أوردرات المندوب PDF', '⇩']] : []), ...(allowed('settlements') ? [['settlements', 'التسويات اليومية', '◈'],['returns', 'استلام المرتجعات', '↩']] : []), ...(allowed('shipments') || allowed('settlements') ? [['reports', 'تقارير الشركات', '⇩']] : []), ...(allowed('accounts') ? [['accounts', 'الخزنة والحسابات', '◈']] : []), ...(allowed('drivers') && allowed('shipments') ? [['monitor', 'متابعة المناديب', '◎']] : []), ...(actualOwner ? [['corrections', 'سجل التصحيحات', '◷'], ['migration', 'نقل بيانات مَسار', '⇧'], ['driver-preview', 'واجهة المندوب', '♙'], ['users', 'المستخدمين والصلاحيات', '♙']] : [])] : [...(data.driverAccess?.account ? [['overview', 'حسابي اليومي', '◫']] : []), ['shipments', 'شحناتي', '▣']];
     return React.createElement("div", { className: "shell" },
         React.createElement("aside", null,
             React.createElement("div", { className: "brand masar-brand" },
@@ -411,6 +414,7 @@ function Dashboard({ user }) {
                 React.createElement("button", { className: "subtle", onClick: exportData }, "\u2193 \u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A")),
             owner && tab === 'accounts' && React.createElement(AccountsPanel, { entries: cashEntries, payments: payments, shipments: ss, day: day, setDay: setDay, act: act, busy: busy, canEdit: allowed('accounts', 'edit') }),
             owner && tab === 'returns' && allowed('settlements') && React.createElement(ReturnHandoverPanel,{shipments:ss,drivers:drivers,handovers:data.returnHandovers||[],act:act,busy:busy,canEdit:allowed('settlements','edit')}),
+            owner && allowed('drivers') && allowed('shipments') && tab === 'driver-orders' && React.createElement(DriverOrdersPdfPanel,{drivers:drivers,shipments:ss}),
             owner && tab === 'settlements' && React.createElement(React.Fragment, null,
                 React.createElement(CustodySummary,{shipments:ss,payments:payments,handovers:data.returnHandovers||[],driverId:null,label:'مراجعة إجمالي العهدة قبل التسوية'}),
                 React.createElement(DateSelect, { day: day, setDay: setDay }),
@@ -725,6 +729,39 @@ function EditDriver({driver,act,busy}){
   React.createElement('div',{className:'formactions'},
    React.createElement('button',{disabled:busy||!name.trim(),onClick:()=>act({op:'driver',id:driver.id,name:name.trim(),phone:phone.trim()},()=>setEditing(false))},'حفظ'),
    React.createElement('button',{className:'subtle',onClick:()=>setEditing(false)},'إلغاء'))
+ );
+}
+
+
+function DriverOrdersPdfPanel({drivers,shipments}){
+ const [id,setId]=useState(''),[status,setStatus]=useState('open'),[start,setStart]=useState(''),[end,setEnd]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const driver=drivers.find(d=>String(d.id)===id);
+ const data=shipments.filter(s=>driver&&Number(s.driver_id)===Number(driver.id))
+  .filter(s=>status==='all'||(status==='open'?(!isFinal(s)&&s.status!=='returned'&&s.status!=='returned_unpaid'):s.status===status))
+  .filter(s=>(!start||businessDate(s.created)>=start)&&(!end||businessDate(s.created)<=end));
+ const el=React.createElement;
+ const options=([['','اختر المندوب']]).concat(drivers.map(d=>[String(d.id),d.name]));
+ const makeSelect=(caption,value,change,choices)=>el('label',null,caption,el('select',{value:value,onChange:e=>change(e.target.value)},choices.map(c=>el('option',{key:c[0],value:c[0]},c[1]))));
+ const save=async()=>{setBusy(true);setError('');try{await window.MasarExportDriverOrders(driver,data)}catch(e){setError(String(e.message||e))}finally{setBusy(false)}};
+ return el('div',{className:'card space'},
+  el('div',{className:'cardhead'},el('div',null,el('h3',null,'تصدير PDF لأوردرات المندوب'),el('p',null,'اختار المندوب وحالة الشحنات والفترة، ثم نزّل الكشف.'))),
+  el('div',{className:'toolbar',style:{display:'flex',flexWrap:'wrap',gap:12,alignItems:'end'}},
+   makeSelect('المندوب',id,setId,options),
+   makeSelect('الحالة',status,setStatus,[['open','المفتوحة'],['all','الكل']].concat(Object.entries(labels))),
+   el('label',null,'من تاريخ',el('input',{type:'date',value:start,onChange:e=>setStart(e.target.value)})),
+   el('label',null,'إلى تاريخ',el('input',{type:'date',value:end,onChange:e=>setEnd(e.target.value)}))
+  ),
+  el('div',{style:{display:'flex',gap:12,alignItems:'center',margin:'12px 0'}},
+   el('span',{className:'tag'},data.length+' أوردر'),
+   el('button',{disabled:busy||!driver||!data.length||!!(start&&end&&start>end),onClick:save},busy?'جارٍ إعداد الملف...':'↓ تنزيل PDF')),
+  error&&el('p',{role:'alert',style:{color:'#b4394c'}},error),
+  data.length?el('div',{className:'tablewrap'},el('table',null,
+   el('thead',null,el('tr',null,['الشحنة','العميل','الهاتف','العنوان','المبلغ','الحالة'].map(x=>el('th',{key:x},x)))),
+   el('tbody',null,data.slice(0,150).map(s=>el('tr',{key:s.id},
+    el('td',null,'#'+s.tracking),el('td',null,s.customer),el('td',null,s.phone),el('td',null,s.address),
+    el('td',null,fmt(s.total)),el('td',null,labels[s.status]||s.status))))
+  )):el('p',{className:'muted'},'اختار مندوبًا لديه شحنات.'),
+  data.length>150&&el('p',{className:'muted'},'المعاينة تعرض أول 150 شحنة؛ ملف PDF يشمل جميع نتائج الفلترة.')
  );
 }
 
