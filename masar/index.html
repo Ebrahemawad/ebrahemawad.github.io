@@ -880,52 +880,50 @@ function PostponedDisposition({shipment,drivers,rpcAct,busy}){
         React.createElement('button',{disabled:busy||reason.trim().length<5||(action==='schedule'&&(!driverId||!date)),onClick:send},action==='schedule'?'حفظ موعد التوزيع':'تأكيد الرجوع للشركة')));
 }
 function ReturnHandoverPanel({shipments,drivers,handovers,act,rpcAct,busy,canEdit}){
+ const e=React.createElement;
  const [selectedDriver,setSelectedDriver]=useState('');
  const [view,setView]=useState('pending');
- const assigned=shipments.filter(s=>s.driver_id!=null&&returnItemValue(s)>0);
- const received=new Set(handovers.filter(x=>!x.released_at).map(x=>Number(x.shipment_id)));
- const outstanding=assigned.filter(s=>!received.has(Number(s.id))&&(!selectedDriver||Number(s.driver_id)===Number(selectedDriver)));
- const receivedList=handovers.filter(x=>!x.released_at&&(!selectedDriver||Number(x.driver_id)===Number(selectedDriver)));
-
- return React.createElement('div',{className:'card space'},
-  React.createElement('div',{className:'cardhead'},React.createElement('div',null,
-    React.createElement('h3',null,'استلام المرتجعات والمؤجلات من المناديب'),
-    React.createElement('p',null,'المؤجل يُعرض كمرتجع مؤقت في التسوية بقيمته الكاملة. لا تسقط عهدته إلا عند استلامه فعليًا، ويمكن إعادة توزيعه للتوصيل.'))),
-  React.createElement('div',{className:'toolbar',style:{display:'flex',flexWrap:'wrap',gap:12,alignItems:'end'}},
-   React.createElement('label',null,'فلتر المندوب',
-    React.createElement('select',{value:selectedDriver,onChange:e=>setSelectedDriver(e.target.value)},
-     React.createElement('option',{value:''},'كل المناديب'),
-     drivers.map(d=>React.createElement('option',{key:d.id,value:d.id},d.name)))),
-   React.createElement('label',null,'حالة الاستلام',
-    React.createElement('select',{value:view,onChange:e=>setView(e.target.value)},
-     React.createElement('option',{value:'pending'},'معلقة للاستلام'),
-     React.createElement('option',{value:'received'},'تم استلامها')))),
-  React.createElement('div',{className:'moneygrid'},
-   React.createElement('div',null,React.createElement('small',null,'معلقة'),React.createElement('b',null,outstanding.length)),
-   React.createElement('div',null,React.createElement('small',null,'قيمة الطرود المعلقة'),React.createElement('b',null,fmt(outstanding.reduce((n,s)=>n+returnItemValue(s),0)))),
-   React.createElement('div',null,React.createElement('small',null,'تم استلامها'),React.createElement('b',null,receivedList.length))),
+ const activeReceipts=handovers.filter(h=>!h.released_at);
+ const receivedIds=new Set(activeReceipts.map(h=>Number(h.shipment_id)));
+ const outstanding=shipments.filter(sh=>sh.driver_id!=null&&returnItemValue(sh)>0&&!receivedIds.has(Number(sh.id))&&(!selectedDriver||Number(sh.driver_id)===Number(selectedDriver)));
+ const received=activeReceipts.filter(h=>!selectedDriver||Number(h.driver_id)===Number(selectedDriver));
+ const driverName=id=>drivers.find(d=>Number(d.id)===Number(id))?.name||'—';
+ return e('div',{className:'card space'},
+  e('h3',null,'استلام المرتجعات والمؤجلات من المناديب'),
+  e('p',{className:'muted'},'بعد استلام المؤجل من المندوب تقدر تحدد يومًا جديدًا لتوزيعه أو ترجعه للشركة.'),
+  e('div',{className:'toolbar'},
+   e('label',null,'المندوب',e('select',{value:selectedDriver,onChange:x=>setSelectedDriver(x.target.value)},
+     e('option',{value:''},'كل المناديب'),drivers.map(d=>e('option',{key:d.id,value:d.id},d.name)))),
+   e('label',null,'الحالة',e('select',{value:view,onChange:x=>setView(x.target.value)},
+     e('option',{value:'pending'},'معلقة للاستلام'),e('option',{value:'received'},'استلمتها الإدارة')))),
+  e('div',{className:'moneygrid'},
+   e('div',null,e('small',null,'مرتجعات معلقة'),e('b',null,outstanding.length)),
+   e('div',null,e('small',null,'قيمة المعلقة'),e('b',null,fmt(outstanding.reduce((n,x)=>n+returnItemValue(x),0)))),
+   e('div',null,e('small',null,'استلمتها الإدارة'),e('b',null,received.length))),
   view==='received'?
-   (receivedList.length?React.createElement('div',{className:'tablewrap'},React.createElement('table',null,
-     React.createElement('thead',null,React.createElement('tr',null,['رقم الشحنة','المندوب','القيمة','تاريخ الاستلام','الإجراء التالي'].map(x=>React.createElement('th',{key:x},x)))),
-     React.createElement('tbody',null,receivedList.map(x=>React.createElement('tr',{key:x.shipment_id},
-      React.createElement('td',null,'#'+(shipments.find(s=>Number(s.id)===Number(x.shipment_id))?.tracking||x.shipment_id)),
-      React.createElement('td',null,drivers.find(d=>Number(d.id)===Number(x.driver_id))?.name||'—'),
-      React.createElement('td',null,fmt(x.amount)),
-      React.createElement('td',null,new Date(x.received_at).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'})),
-      React.createElement('td',null,(()=>{const item=shipments.find(s=>Number(s.id)===Number(x.shipment_id));return item?.status==='postponed'?(canEdit?React.createElement(PostponedDisposition,{shipment:item,drivers,rpcAct,busy}):'عرض فقط'):item?.status==='returned_company'?'تم رده للشركة':'محفوظ في سجل المرتجعات'})()))))))):
-     React.createElement('p',{className:'muted'},'لا توجد مرتجعات مستلمة للمندوب المختار.')):
-    outstanding.length?React.createElement('div',{className:'tablewrap'},
-   React.createElement('table',null,React.createElement('thead',null,React.createElement('tr',null,
-    ['رقم الشحنة','المندوب','نوع المرتجع','قيمة الطرد','الإجراء'].map(x=>React.createElement('th',{key:x},x)))),
-    React.createElement('tbody',null,outstanding.map(s=>React.createElement('tr',{key:s.id},
-     React.createElement('td',null,'#'+s.tracking),React.createElement('td',null,drivers.find(d=>Number(d.id)===Number(s.driver_id))?.name||'—'),
-     React.createElement('td',null,s.status==='postponed'?'مؤجل — مرتجع مؤقت':labels[s.status]),React.createElement('td',null,fmt(returnItemValue(s))),
-     React.createElement('td',null,canEdit?React.createElement('button',{className:'subtle',disabled:busy,onClick:()=>{
-       if(!confirm('هل استلمت '+(s.status==='postponed'?'الشحنة المؤجلة':'الطرد المرتجع')+' فعليًا من المندوب؟ رقم '+s.tracking+' وقيمته '+fmt(returnItemValue(s))))return;
-       act({op:'return_handover',shipmentId:s.id});
-     }},'تأكيد استلام الطرد'):React.createElement('span',null,'عرض فقط'))))))):
-   React.createElement('p',{className:'muted'},'لا توجد مرتجعات أو مؤجلات معلّقة للاستلام.'),
-  React.createElement('p',{className:'muted'},'تم تسجيل استلام '+receivedList.length+' طرد من الفلتر الحالي. استلام الطرد لا يضيف رصيدًا نقديًا.')
+    (received.length?e('div',{className:'tablewrap'},e('table',null,
+      e('thead',null,e('tr',null,['الشحنة','المندوب','القيمة','تاريخ الاستلام','الإجراء'].map(x=>e('th',{key:x},x)))),
+      e('tbody',null,received.map(h=>{
+        const sh=shipments.find(x=>Number(x.id)===Number(h.shipment_id));
+        return e('tr',{key:h.id},
+         e('td',null,'#'+(sh?.tracking||h.shipment_id)),
+         e('td',null,driverName(h.driver_id)),
+         e('td',null,fmt(h.amount)),
+         e('td',null,new Date(h.received_at).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'})),
+         e('td',null,sh?.status==='postponed'?
+            (canEdit?e(PostponedDisposition,{shipment:sh,drivers,rpcAct,busy}):'عرض فقط'):
+            sh?.status==='returned_company'?'تم رده للشركة':'المرتجع محفوظ في الإدارة'));
+      })))):e('p',{className:'muted'},'لا توجد مرتجعات مستلمة.')):
+    (outstanding.length?e('div',{className:'tablewrap'},e('table',null,
+      e('thead',null,e('tr',null,['الشحنة','المندوب','الحالة','قيمة المرتجع','الإجراء'].map(x=>e('th',{key:x},x)))),
+      e('tbody',null,outstanding.map(sh=>e('tr',{key:sh.id},
+        e('td',null,'#'+sh.tracking),e('td',null,driverName(sh.driver_id)),
+        e('td',null,labels[sh.status]||sh.status),e('td',null,fmt(returnItemValue(sh))),
+        e('td',null,canEdit?e('button',{className:'subtle',disabled:busy,onClick:()=>{
+         if(!confirm('تأكيد استلام الطرد '+sh.tracking+' فعليًا من المندوب؟'))return;
+         act({op:'return_handover',shipmentId:sh.id});
+        }},'تأكيد استلام الطرد'):'عرض فقط')))))):
+       e('p',{className:'muted'},'لا توجد مرتجعات معلقة للاستلام.'))
  );
 }
 function CourierCorrection({shipment,rpcAct,disabled}){
@@ -951,21 +949,25 @@ function CourierCorrection({shipment,rpcAct,disabled}){
     React.createElement('button',{className:'subtle',onClick:()=>setOpen(false)},'إلغاء')));
 }
 function OperationsHistoryPanel({entries,shipments}){
- const actions={schedule_redelivery:'جدولة إعادة توزيع',activate_redelivery:'تفعيل توزيع في الموعد',return_to_company:'إرجاع للشركة'};
- return React.createElement('div',{className:'card space'},
-  React.createElement('h3',null,'سجل تعديلات الحالات وحركة المرتجعات'),
-  React.createElement('p',{className:'muted'},'يحتفظ بالنوع والسبب واسم المنفذ والتوقيت والحالة السابقة والجديدة.'),
-  entries.length?React.createElement('div',{className:'tablewrap'},React.createElement('table',null,
-   React.createElement('thead',null,React.createElement('tr',null,['الشحنة','العملية','قبل','بعد','السبب','بواسطة','التاريخ'].map(x=>React.createElement('th',{key:x},x)))),
-   React.createElement('tbody',null,entries.map((x,i)=>React.createElement('tr',{key:x.kind+'-'+x.id+'-'+i},
-      React.createElement('td',null,'#'+(shipments.find(s=>Number(s.id)===Number(x.shipment_id))?.tracking||x.shipment_id)),
-      React.createElement('td',null,x.kind==='correction'?'تصحيح الحالة':actions[x.action]||x.action),
-      React.createElement('td',null,labels[x.old_status]||'—'),
-      React.createElement('td',null,labels[x.new_status]|| (x.planned_date?'مجدول '+x.planned_date:'—')),
-      React.createElement('td',null,x.reason||'—'),
-      React.createElement('td',null,x.actor||'النظام'),
-      React.createElement('td',null,new Date(x.created).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'})))))):
-  React.createElement('p',null,'لا توجد تعديلات مسجلة.'));
+ const e=React.createElement;
+ const actions={schedule_redelivery:'جدولة إعادة توزيع',activate_redelivery:'تفعيل التوزيع',return_to_company:'إرجاع للشركة'};
+ return e('div',{className:'card space'},
+  e('h3',null,'سجل تعديلات الحالات وحركة المرتجعات'),
+  e('p',{className:'muted'},'الحالة قبل وبعد، السبب، المنفذ، وتوقيت العملية.'),
+  entries.length?e('div',{className:'tablewrap'},
+   e('table',null,
+    e('thead',null,e('tr',null,['الشحنة','العملية','قبل','بعد','السبب','بواسطة','التوقيت'].map(x=>e('th',{key:x},x)))),
+    e('tbody',null,entries.map((x,i)=>e('tr',{key:x.kind+'-'+x.id+'-'+i},
+     e('td',null,'#'+(shipments.find(s=>Number(s.id)===Number(x.shipment_id))?.tracking||x.shipment_id)),
+     e('td',null,x.kind==='correction'?'تصحيح حالة':actions[x.action]||x.action),
+     e('td',null,labels[x.old_status]||'—'),
+     e('td',null,labels[x.new_status]||(x.planned_date?'مجدول '+x.planned_date:'—')),
+     e('td',null,x.reason||'—'),
+     e('td',null,x.actor||'النظام'),
+     e('td',null,new Date(x.created).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'}))
+    )))
+   )
+  ):e('p',{className:'muted'},'لا توجد تعديلات مسجلة.'));
 }
 function EditDriver({driver,act,busy,reload}){
  const [editing,setEditing]=useState(false),[name,setName]=useState(driver.name||''),[phone,setPhone]=useState(driver.phone||''),[commission,setCommission]=useState(driver.commission_amount==null?'':String(driver.commission_amount/100)),[saving,setSaving]=useState(false),[error,setError]=useState('');
@@ -1133,32 +1135,28 @@ function DeliveryAppointment({shipment,appointment,onSaved}){
    current&&React.createElement('button',{className:'subtle',disabled:busy,onClick:()=>save(true)},'إلغاء الميعاد'))
  );
 }
-function DriverShipments({ rows, act, rpcAct=()=>{}, officeReceivedIds=new Set(), access = { account: true, status: true }, appointments={}, refreshAppointments=async()=>{}, isCourier=false }) { return React.createElement("div", { className: "drivercards" }, rows.map((s) => React.createElement("div", { className: "drivercard", key: s.id },
-    React.createElement("div", { className: "cardhead" },
-        React.createElement("b", null,
-            "#",
-            s.tracking),
-        React.createElement("span", { className: 'badge ' + s.status }, labels[s.status])),
-    React.createElement("h3", null, s.customer),
-    React.createElement("p", null, s.address),
-    React.createElement("p", null,
-        "تفاصيل الشحنة: ",s.product," · عدد القطع: ",s.piece_count||1,
-        " \u00B7 \u0627\u0644\u0645\u0637\u0644\u0648\u0628 \u062A\u062D\u0635\u064A\u0644\u0647: ",
-        React.createElement("b", null, fmt(amountToCollect(s)))),
-    Number(s.advance_amount||0)>0 && React.createElement("p", null, "إجمالي الأوردر: ",React.createElement("b",null,fmt(s.total)), " · المقدم: ",React.createElement("b",null,fmt(s.advance_amount))),
-    access.account && React.createElement("p", null,
-        "\u0646\u0635\u064A\u0628\u0643 \u0639\u0646\u062F \u0627\u0644\u062A\u0633\u0644\u064A\u0645: ",
-        React.createElement("b", null, fmt(s.driver_fee))),
-    React.createElement("a", { className: "call", href: 'tel:' + s.phone },
-        "\u0627\u062A\u0635\u0644 \u0628\u0627\u0644\u0639\u0645\u064A\u0644 \u00B7 ",
-        s.phone),
-    s.notes && React.createElement("p", null,
-        "\u0645\u0644\u0627\u062D\u0638\u0629: ",
-        s.notes),
-    isCourier && !isFinal(s) && !['returned','returned_unpaid'].includes(s.status) && React.createElement(DeliveryAppointment,{shipment:s,appointment:appointments[s.id],onSaved:refreshAppointments}),
-    (isFinal(s)||['returned','returned_unpaid'].includes(s.status)) ? React.createElement("div", { className: "hint" }, "\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062D\u0627\u0644\u0629 \u0648\u0642\u0641\u0644 \u0627\u0644\u0634\u062D\u0646\u0629 \u0644\u0644\u062D\u0633\u0627\u0628\u0627\u062A.") : access.status ? React.createElement(Status, { s: s, act: act }) : React.createElement("p", null, "عرض فقط"),
-    isCourier&&access.status&&!officeReceivedIds.has(Number(s.id))&&s.status!=='returned_company'&&
-      React.createElement(CourierCorrection,{shipment:s,rpcAct,disabled:false}))); }
+function DriverShipments({rows,act,rpcAct=()=>{},officeReceivedIds=new Set(),access={account:true,status:true},appointments={},refreshAppointments=async()=>{},isCourier=false}){
+ const e=React.createElement;
+ return e('div',{className:'drivercards'},rows.map(sh=>
+  e('div',{className:'drivercard',key:sh.id},
+   e('div',{className:'cardhead'},e('b',null,'#'+sh.tracking),e('span',{className:'badge '+sh.status},labels[sh.status]||sh.status)),
+   e('h3',null,sh.customer),
+   e('p',null,sh.address),
+   e('p',null,'تفاصيل الشحنة: '+sh.product+' · عدد القطع: '+(sh.piece_count||1)+' · المطلوب تحصيله: ',e('b',null,fmt(amountToCollect(sh)))),
+   Number(sh.advance_amount||0)>0&&e('p',null,'إجمالي الأوردر: ',e('b',null,fmt(sh.total)),' · المقدم: ',e('b',null,fmt(sh.advance_amount))),
+   access.account&&e('p',null,'نصيبك عند التسليم: ',e('b',null,fmt(sh.driver_fee))),
+   e('a',{className:'call',href:'tel:'+sh.phone},'اتصل بالعميل · '+sh.phone),
+   sh.notes&&e('p',null,'ملاحظات: '+sh.notes),
+   isCourier&&!isFinal(sh)&&!['returned','returned_unpaid','returned_company'].includes(sh.status)&&
+      e(DeliveryAppointment,{shipment:sh,appointment:appointments[sh.id],onSaved:refreshAppointments}),
+   isFinal(sh)||['returned','returned_unpaid','returned_company'].includes(sh.status)?
+      e('div',{className:'hint'},'الحالة مسجلة. يمكن طلب تصحيح بشرط عدم وجود تسوية أو تسليم مرتجع للإدارة.'):
+      access.status?e(Status,{s:sh,act}):e('p',null,'عرض فقط'),
+   isCourier&&access.status&&!officeReceivedIds.has(Number(sh.id))&&sh.status!=='returned_company'&&
+      e(CourierCorrection,{shipment:sh,rpcAct,disabled:false})
+  )
+ ));
+}
 function Settlement({ title, type, parties, shipments, payments, closures = [], day, act, busy, canEdit }) { const [party, setParty] = useState(''), [amount, setAmount] = useState(''), [note, setNote] = useState(''); let v = party ? dayAccount(shipments, payments, type, Number(party), day) : { opening: 0, accrued: 0, settled: 0, closing: 0 }; let today = day === businessDate(new Date()), closed = type === 'driver' && closures.some((x) => x.driver_id === Number(party) && x.day === day && !x.reopened_at); return React.createElement("div", { className: "card" },
     React.createElement("h3", null, title),
     React.createElement("label", null,
