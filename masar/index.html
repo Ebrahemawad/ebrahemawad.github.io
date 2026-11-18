@@ -853,7 +853,33 @@ function CustodySummary({shipments,payments,handovers,driverId,label}){
   v.unassignedValue>0&&driverId==null&&React.createElement('p',{className:'muted'},'ملاحظة: شحنات لم تُوزّع على مناديب بقيمة '+fmt(v.unassignedValue)+'، ولا تعتبر عهدة مندوب حتى التوزيع.')
  );
 }
-function ReturnHandoverPanel({shipments,drivers,handovers,act,busy,canEdit}){
+function PostponedDisposition({shipment,drivers,rpcAct,busy}){
+ const [action,setAction]=useState('schedule'),[driverId,setDriverId]=useState(''),[date,setDate]=useState(''),[reason,setReason]=useState('');
+ const send=()=>{
+   if(reason.trim().length<5){alert('اكتب سبب واضح لا يقل عن 5 أحرف');return}
+   if(action==='schedule'){
+     if(!driverId||!date){alert('اختار المندوب وتاريخ إعادة التوزيع');return}
+     rpcAct('masar_schedule_postponed',{p_shipment_id:shipment.id,p_driver_id:Number(driverId),p_date:date,p_reason:reason.trim()},()=>{setReason('');setDriverId('');setDate('')});
+   }else{
+     if(!confirm('تأكيد تسليم الشحنة #'+shipment.tracking+' للشركة وإغلاقها من التوزيع؟'))return;
+     rpcAct('masar_return_postponed_to_company',{p_shipment_id:shipment.id,p_reason:reason.trim()},()=>setReason(''));
+   }
+ };
+ return React.createElement('div',{className:'correction-form',style:{padding:10,minWidth:250}},
+    shipment.scheduled_driver_id?
+      React.createElement('p',{className:'hint'},'مجدولة ليوم '+shipment.scheduled_delivery_date+' مع '+(drivers.find(d=>Number(d.id)===Number(shipment.scheduled_driver_id))?.name||'المندوب')+'. سيتم تحويل عهدتها تلقائيًا في الموعد.'):
+      React.createElement(React.Fragment,null,
+        React.createElement('select',{value:action,onChange:e=>setAction(e.target.value)},
+          React.createElement('option',{value:'schedule'},'إعادة توزيع في يوم آخر'),
+          React.createElement('option',{value:'company'},'إرجاع للشركة')),
+        action==='schedule'&&React.createElement(React.Fragment,null,
+          React.createElement('select',{value:driverId,onChange:e=>setDriverId(e.target.value)},
+             React.createElement('option',{value:''},'اختار المندوب'),drivers.map(d=>React.createElement('option',{key:d.id,value:d.id},d.name))),
+          React.createElement('label',null,'تاريخ التوزيع الجديد',React.createElement('input',{type:'date',value:date,onChange:e=>setDate(e.target.value)}))),
+        React.createElement('input',{value:reason,onChange:e=>setReason(e.target.value),maxLength:500,placeholder:action==='schedule'?'سبب إعادة التوزيع':'سبب إرجاع الشحنة للشركة'}),
+        React.createElement('button',{disabled:busy||reason.trim().length<5||(action==='schedule'&&(!driverId||!date)),onClick:send},action==='schedule'?'حفظ موعد التوزيع':'تأكيد الرجوع للشركة')));
+}
+function ReturnHandoverPanel({shipments,drivers,handovers,act,rpcAct,busy,canEdit}){
  const [selectedDriver,setSelectedDriver]=useState('');
  const [view,setView]=useState('pending');
  const assigned=shipments.filter(s=>s.driver_id!=null&&returnItemValue(s)>0);
@@ -880,12 +906,13 @@ function ReturnHandoverPanel({shipments,drivers,handovers,act,busy,canEdit}){
    React.createElement('div',null,React.createElement('small',null,'تم استلامها'),React.createElement('b',null,receivedList.length))),
   view==='received'?
    (receivedList.length?React.createElement('div',{className:'tablewrap'},React.createElement('table',null,
-     React.createElement('thead',null,React.createElement('tr',null,['رقم الشحنة','المندوب','القيمة','تاريخ الاستلام'].map(x=>React.createElement('th',{key:x},x)))),
+     React.createElement('thead',null,React.createElement('tr',null,['رقم الشحنة','المندوب','القيمة','تاريخ الاستلام','الإجراء التالي'].map(x=>React.createElement('th',{key:x},x)))),
      React.createElement('tbody',null,receivedList.map(x=>React.createElement('tr',{key:x.shipment_id},
       React.createElement('td',null,'#'+(shipments.find(s=>Number(s.id)===Number(x.shipment_id))?.tracking||x.shipment_id)),
       React.createElement('td',null,drivers.find(d=>Number(d.id)===Number(x.driver_id))?.name||'—'),
       React.createElement('td',null,fmt(x.amount)),
-      React.createElement('td',null,new Date(x.received_at).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'}))))))):
+      React.createElement('td',null,new Date(x.received_at).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'})),
+      React.createElement('td',null,(()=>{const item=shipments.find(s=>Number(s.id)===Number(x.shipment_id));return item?.status==='postponed'?(canEdit?React.createElement(PostponedDisposition,{shipment:item,drivers,rpcAct,busy}):'عرض فقط'):item?.status==='returned_company'?'تم رده للشركة':'محفوظ في سجل المرتجعات'})()))))))):
      React.createElement('p',{className:'muted'},'لا توجد مرتجعات مستلمة للمندوب المختار.')):
     outstanding.length?React.createElement('div',{className:'tablewrap'},
    React.createElement('table',null,React.createElement('thead',null,React.createElement('tr',null,
@@ -900,6 +927,45 @@ function ReturnHandoverPanel({shipments,drivers,handovers,act,busy,canEdit}){
    React.createElement('p',{className:'muted'},'لا توجد مرتجعات أو مؤجلات معلّقة للاستلام.'),
   React.createElement('p',{className:'muted'},'تم تسجيل استلام '+receivedList.length+' طرد من الفلتر الحالي. استلام الطرد لا يضيف رصيدًا نقديًا.')
  );
+}
+function CourierCorrection({shipment,rpcAct,disabled}){
+ const [open,setOpen]=useState(false),[status,setStatus]=useState(shipment.status),
+       [reason,setReason]=useState(''),[amount,setAmount]=useState('');
+ useEffect(()=>{setStatus(shipment.status);setOpen(false);setReason('');setAmount('')},[shipment.status,shipment.collected]);
+ const options=['transit','delivered','partial','postponed','returned','returned_visit','returned_unpaid'].filter(x=>x!=='partial'||shipment.partial_allowed);
+ const submit=()=>{
+   if(reason.trim().length<5)return;
+   const num=(status==='partial'||status==='returned_visit')?cents(amount):null;
+   if((status==='partial'||status==='returned_visit')&&(!Number.isSafeInteger(num)||num<=0)){alert('اكتب المبلغ المحصّل بشكل صحيح');return}
+   if(!confirm('تأكيد تصحيح الحالة مع تسجيل اسمك والسبب في السجل؟'))return;
+   rpcAct('masar_correct_shipment_status',{p_shipment_id:Number(shipment.id),p_new_status:status,p_collected:num,p_reason:reason.trim()},()=>setOpen(false));
+ };
+ return React.createElement('div',{className:'correction-form',style:{marginTop:10}},
+  !open?React.createElement('button',{className:'subtle',disabled,onClick:()=>setOpen(true)},'تصحيح حالة الشحنة'):
+  React.createElement(React.Fragment,null,
+    React.createElement('p',{className:'muted'},'التصحيح يتسجل باسمك وبالحالة القديمة والجديدة والسبب، وممنوع بعد إقفال الحساب أو تسليم المرتجع للإدارة.'),
+    React.createElement('select',{value:status,onChange:e=>setStatus(e.target.value)},options.map(x=>React.createElement('option',{value:x,key:x},labels[x]))),
+    (status==='partial'||status==='returned_visit')&&React.createElement('input',{type:'number',min:'0',step:'0.01',value:amount,onChange:e=>setAmount(e.target.value),placeholder:'المبلغ المحصل (جنيه)'}),
+    React.createElement('textarea',{value:reason,onChange:e=>setReason(e.target.value),placeholder:'سبب التصحيح (إجباري، 5 أحرف على الأقل)',maxLength:500,rows:2}),
+    React.createElement('button',{disabled:disabled||reason.trim().length<5,onClick:submit},'حفظ التصحيح'),
+    React.createElement('button',{className:'subtle',onClick:()=>setOpen(false)},'إلغاء')));
+}
+function OperationsHistoryPanel({entries,shipments}){
+ const actions={schedule_redelivery:'جدولة إعادة توزيع',activate_redelivery:'تفعيل توزيع في الموعد',return_to_company:'إرجاع للشركة'};
+ return React.createElement('div',{className:'card space'},
+  React.createElement('h3',null,'سجل تعديلات الحالات وحركة المرتجعات'),
+  React.createElement('p',{className:'muted'},'يحتفظ بالنوع والسبب واسم المنفذ والتوقيت والحالة السابقة والجديدة.'),
+  entries.length?React.createElement('div',{className:'tablewrap'},React.createElement('table',null,
+   React.createElement('thead',null,React.createElement('tr',null,['الشحنة','العملية','قبل','بعد','السبب','بواسطة','التاريخ'].map(x=>React.createElement('th',{key:x},x)))),
+   React.createElement('tbody',null,entries.map((x,i)=>React.createElement('tr',{key:x.kind+'-'+x.id+'-'+i},
+      React.createElement('td',null,'#'+(shipments.find(s=>Number(s.id)===Number(x.shipment_id))?.tracking||x.shipment_id)),
+      React.createElement('td',null,x.kind==='correction'?'تصحيح الحالة':actions[x.action]||x.action),
+      React.createElement('td',null,labels[x.old_status]||'—'),
+      React.createElement('td',null,labels[x.new_status]|| (x.planned_date?'مجدول '+x.planned_date:'—')),
+      React.createElement('td',null,x.reason||'—'),
+      React.createElement('td',null,x.actor||'النظام'),
+      React.createElement('td',null,new Date(x.created).toLocaleString('ar-EG',{timeZone:'Africa/Cairo'})))))):
+  React.createElement('p',null,'لا توجد تعديلات مسجلة.'));
 }
 function EditDriver({driver,act,busy,reload}){
  const [editing,setEditing]=useState(false),[name,setName]=useState(driver.name||''),[phone,setPhone]=useState(driver.phone||''),[commission,setCommission]=useState(driver.commission_amount==null?'':String(driver.commission_amount/100)),[saving,setSaving]=useState(false),[error,setError]=useState('');
@@ -1067,7 +1133,7 @@ function DeliveryAppointment({shipment,appointment,onSaved}){
    current&&React.createElement('button',{className:'subtle',disabled:busy,onClick:()=>save(true)},'إلغاء الميعاد'))
  );
 }
-function DriverShipments({ rows, act, access = { account: true, status: true }, appointments={}, refreshAppointments=async()=>{}, isCourier=false }) { return React.createElement("div", { className: "drivercards" }, rows.map((s) => React.createElement("div", { className: "drivercard", key: s.id },
+function DriverShipments({ rows, act, rpcAct=()=>{}, officeReceivedIds=new Set(), access = { account: true, status: true }, appointments={}, refreshAppointments=async()=>{}, isCourier=false }) { return React.createElement("div", { className: "drivercards" }, rows.map((s) => React.createElement("div", { className: "drivercard", key: s.id },
     React.createElement("div", { className: "cardhead" },
         React.createElement("b", null,
             "#",
@@ -1090,7 +1156,9 @@ function DriverShipments({ rows, act, access = { account: true, status: true }, 
         "\u0645\u0644\u0627\u062D\u0638\u0629: ",
         s.notes),
     isCourier && !isFinal(s) && !['returned','returned_unpaid'].includes(s.status) && React.createElement(DeliveryAppointment,{shipment:s,appointment:appointments[s.id],onSaved:refreshAppointments}),
-    (isFinal(s)||['returned','returned_unpaid'].includes(s.status)) ? React.createElement("div", { className: "hint" }, "\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062D\u0627\u0644\u0629 \u0648\u0642\u0641\u0644 \u0627\u0644\u0634\u062D\u0646\u0629 \u0644\u0644\u062D\u0633\u0627\u0628\u0627\u062A.") : access.status ? React.createElement(Status, { s: s, act: act }) : React.createElement("p", null, "\u0639\u0631\u0636 \u0641\u0642\u0637")))); }
+    (isFinal(s)||['returned','returned_unpaid'].includes(s.status)) ? React.createElement("div", { className: "hint" }, "\u062A\u0645 \u062A\u0623\u0643\u064A\u062F \u0627\u0644\u062D\u0627\u0644\u0629 \u0648\u0642\u0641\u0644 \u0627\u0644\u0634\u062D\u0646\u0629 \u0644\u0644\u062D\u0633\u0627\u0628\u0627\u062A.") : access.status ? React.createElement(Status, { s: s, act: act }) : React.createElement("p", null, "عرض فقط"),
+    isCourier&&access.status&&!officeReceivedIds.has(Number(s.id))&&s.status!=='returned_company'&&
+      React.createElement(CourierCorrection,{shipment:s,rpcAct,disabled:false}))); }
 function Settlement({ title, type, parties, shipments, payments, closures = [], day, act, busy, canEdit }) { const [party, setParty] = useState(''), [amount, setAmount] = useState(''), [note, setNote] = useState(''); let v = party ? dayAccount(shipments, payments, type, Number(party), day) : { opening: 0, accrued: 0, settled: 0, closing: 0 }; let today = day === businessDate(new Date()), closed = type === 'driver' && closures.some((x) => x.driver_id === Number(party) && x.day === day && !x.reopened_at); return React.createElement("div", { className: "card" },
     React.createElement("h3", null, title),
     React.createElement("label", null,
